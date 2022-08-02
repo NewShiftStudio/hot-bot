@@ -24,6 +24,14 @@ class UserService {
     });
   }
 
+  async findOneByPhone(phoneNumber: string) {
+    return await this.userRepository.findOne({
+      where: {
+        phoneNumber,
+      },
+    });
+  }
+
   async getAll() {
     return await this.userRepository.find();
   }

@@ -7,6 +7,9 @@ import './server';
 import { questions } from './questions';
 
 import { userService } from './common/services/user.service';
+import { validateDateOfBirth } from './helpers/dobValidator';
+import { validatePhoneNumber } from './helpers/phoneValidation';
+import { ValidationResult } from './@types/entities/ValidationResult';
 
 const token = process.env.BOT_TOKEN;
 
@@ -50,8 +53,17 @@ bot.on('text', async ctx => {
   if (!user) return;
 
   const step = user.step;
+  if (step === 'registered') {
+    return;
+  }
   const answer = ctx.message.text;
   const question = questions[step];
+
+  const validationResult = await validateStep(step, answer);
+
+  if (validationResult.status !== 'success') {
+    return ctx.reply(validationResult.message);
+  }
 
   if (!question) {
     console.error(
@@ -59,6 +71,7 @@ bot.on('text', async ctx => {
     );
     return ctx.reply('Возникла ошибка. Обратитесь к администратору');
   }
+
   const nextStep = question.nextStep;
 
   if (!nextStep) {
@@ -85,6 +98,28 @@ bot.on('text', async ctx => {
   }
   return ctx.reply(questions[nextStep].label);
 });
+
+async function validateStep(
+  stepName: string,
+  answer: string
+): Promise<ValidationResult> {
+  switch (stepName) {
+    case 'dateOfBirth':
+      return validateDateOfBirth(answer);
+    case 'phoneNumber':
+      const user = await userService.findOneByPhone(answer);
+      if (!user) return validatePhoneNumber(answer);
+      return {
+        status: 'error',
+        message: 'Пользователь с таким номером уже зарегистрирован!',
+      };
+    default:
+      return {
+        status: 'success',
+        message: '',
+      };
+  }
+}
 
 bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
