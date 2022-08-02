@@ -4,16 +4,19 @@ import { User } from './User';
 
 @Entity('card')
 export class Card extends Base {
-  @Column()
+  @Column({ nullable: true })
   cardTrack: string;
 
-  @Column()
+  @Column({ nullable: true })
   cardNumber: string;
 
-  @Column()
+  @Column({ nullable: true })
   barCodeLink: string;
 
-  @OneToOne(() => User, user => user.id)
+  @OneToOne(() => User, user => user.card, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn()
-  user: Card;
+  user: User;
 }

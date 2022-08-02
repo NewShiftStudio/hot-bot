@@ -16,8 +16,28 @@ class CardService {
     return await this.cardRepository.find();
   }
 
+  async getOne(id: number) {
+    return await this.cardRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+  }
+
+  async getFreeCard() {
+    const freeCards = await this.cardRepository.find({
+      relations: {
+        user: false,
+      },
+    });
+    return freeCards[0];
+  }
+
   async create(card: Partial<Card>) {
     return await this.cardRepository.save(card);
+  }
+
+  async update(id: number, card: Partial<Card>) {
+    return await this.cardRepository.update(id, card);
   }
 
   async delete(id: number) {

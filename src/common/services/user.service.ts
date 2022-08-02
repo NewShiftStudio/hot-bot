@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import { User } from '../entities/User';
 import { AppDataSource } from '../../database/appDataSourse';
+import { cardService } from './card.service';
 
 class UserService {
   userRepository: Repository<User>;
@@ -18,6 +19,7 @@ class UserService {
       where: {
         telegramId,
       },
+      relations: ['card'],
     });
   }
 
@@ -31,6 +33,21 @@ class UserService {
 
   async getAll() {
     return await this.userRepository.find();
+  }
+
+  async getById(id: number) {
+    return await this.userRepository.findOne({ where: { id } });
+  }
+
+  async setCard(id: number) {
+    const user = await this.getById(id);
+    if (!user) return;
+    if (user.card) {
+      return;
+    }
+    const card = await cardService.getFreeCard();
+    user.card = card;
+    return await this.userRepository.save(user);
   }
 
   async update(telegramId: number, user: Partial<User>) {

@@ -1,9 +1,6 @@
 import { toBuffer, ToBufferOptions } from 'bwip-js';
 import * as fs from 'fs';
-import { createConnection } from 'net';
-import { ConnectionOptions } from 'typeorm';
-import list from './../123.json';
-import { Card } from './common/entities/Card';
+import list from './../cards.json';
 import { cardService } from './common/services/card.service';
 import { AppDataSource } from './database/appDataSourse';
 

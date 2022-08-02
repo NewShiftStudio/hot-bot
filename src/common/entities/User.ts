@@ -7,25 +7,28 @@ export class User extends Base {
   @Column()
   telegramId: number;
 
-  @Column({ default: '' })
+  @Column({ nullable: true })
   step: string;
 
-  @Column({ default: '' })
+  @Column({ nullable: true })
   firstName: string;
 
-  @Column({ default: '' })
+  @Column({ nullable: true })
   secondName: string;
 
-  @Column({ default: '' })
+  @Column({ nullable: true })
   phoneNumber: string;
 
-  @Column({ default: '' })
+  @Column({ nullable: true })
   dateOfBirth: string;
 
   @Column({ default: 0 })
   balance: number;
 
-  @OneToOne(() => Card, card => card.id)
+  @OneToOne(() => Card, card => card.user, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn()
   card: Card;
 }
