@@ -1,0 +1,37 @@
+{
+  "name": "hot-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot, sqlite, web hooks, amo, ico",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/bot.ts",
+    "build": "rm -rf dist && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NewShiftStudio/hot-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NewShiftStudio/hot-bot/issues"
+  },
+  "homepage": "https://github.com/NewShiftStudio/hot-bot#readme",
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "nodemon": "^2.0.19",
+    "sqlite3": "^5.0.10",
+    "telegraf": "^4.8.6",
+    "typeorm": "^0.3.7",
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.6.1",
+    "ts-node": "^10.9.1"
+  }
+}
