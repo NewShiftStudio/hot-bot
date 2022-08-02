@@ -18,7 +18,7 @@ export const bot = new Telegraf(token);
 
 bot.command('start', ctx => {
   ctx.reply(
-    'Добро пожаловать в hot-bot. Список команд:\n\n/register - регистрация в системе скидок\n/delete - удаление вашего профиля из системы скидок'
+    'Добро пожаловать в hot-bot. Список команд:\n\n/register - регистрация в системе скидок\n/delete - удаление вашего профиля из системы скидок\n/notifications - подписаться на рассылку (обсудим позже)'
   );
 });
 
@@ -36,9 +36,9 @@ bot.command('delete', async ctx => {
 bot.command('register', async ctx => {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
-
+  const chatId = ctx.message.chat.id;
   if (!user) {
-    await userService.create({ telegramId, step: 'firstName' });
+    await userService.create({ telegramId, step: 'firstName', chatId });
     const firstQuestion = questions.firstName.label;
     ctx.reply(firstQuestion);
   } else {
@@ -60,6 +60,18 @@ bot.command('balance', async ctx => {
     `Ваш баланс ${user.balance}`,
     Markup.inlineKeyboard([Markup.button.callback('Списать баллы', 'spend')])
   );
+});
+
+bot.command('notifications', async ctx => {
+  const telegramId = ctx.message.from.id;
+  const chatId = ctx.message.chat.id;
+
+  try {
+    await userService.update(telegramId, { chatId });
+    ctx.reply('Вы подписались на рассылку!');
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 bot.on('text', async ctx => {

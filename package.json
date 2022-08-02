@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon ./src/main.ts",
     "generate": "ts-node ./src/parseCardsList.ts",
+    "notifications": "ts-node ./src/scripts/notifications.ts",
     "build": "rm -rf dist && tsc"
   },
   "repository": {

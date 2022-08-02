@@ -8,6 +8,9 @@ export class User extends Base {
   telegramId: number;
 
   @Column({ nullable: true })
+  chatId: number;
+
+  @Column({ nullable: true })
   step: string;
 
   @Column({ nullable: true })
