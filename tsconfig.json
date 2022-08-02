@@ -22,6 +22,5 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true
   },
-  "files": ["src/bot.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,9 +1,6 @@
 import { Repository } from 'typeorm';
-
-import dotenv from 'dotenv';
 import { User } from '../entities/User';
-import { AppDataSource } from '../../server';
-dotenv.config();
+import { AppDataSource } from '../../database/appDataSourse';
 
 class UserService {
   userRepository: Repository<User>;

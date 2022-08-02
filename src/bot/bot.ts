@@ -1,15 +1,12 @@
 import { Telegraf } from 'telegraf';
+import { questions } from './questions';
+import { userService } from '../common/services/user.service';
+import { validateDateOfBirth } from '../helpers/dobValidator';
+import { validatePhoneNumber } from '../helpers/phoneValidation';
+import { ValidationResult } from '../@types/entities/ValidationResult';
 
 import dotenv from 'dotenv';
 dotenv.config();
-
-import './server';
-import { questions } from './questions';
-
-import { userService } from './common/services/user.service';
-import { validateDateOfBirth } from './helpers/dobValidator';
-import { validatePhoneNumber } from './helpers/phoneValidation';
-import { ValidationResult } from './@types/entities/ValidationResult';
 
 const token = process.env.BOT_TOKEN;
 
@@ -17,10 +14,10 @@ if (!token) {
   throw new Error('BOT_TOKEN must be provided!');
 }
 
-const bot = new Telegraf(token);
+export const bot = new Telegraf(token);
 
 bot.command('start', async ctx => {
-  ctx.reply('Я живой!');
+  ctx.reply('Hello!');
 });
 
 bot.command('delete', async ctx => {
@@ -120,7 +117,3 @@ async function validateStep(
       };
   }
 }
-
-bot.launch();
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));

@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { Base } from './Base';
+import { Card } from './Card';
 
 @Entity('user')
 export class User extends Base {
@@ -23,4 +24,8 @@ export class User extends Base {
 
   @Column({ default: 0 })
   balance: number;
+
+  @OneToOne(() => Card, card => card.id)
+  @JoinColumn()
+  card: Card;
 }
