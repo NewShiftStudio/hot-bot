@@ -1,3 +1,4 @@
+import { differenceInCalendarDays } from 'date-fns';
 import { Telegram } from 'telegraf';
 import { userService } from '../common/services/user.service';
 import { AppDataSource } from '../database/appDataSourse';
@@ -9,26 +10,26 @@ if (!token) {
 
 const telegram = new Telegram(token);
 
-async function congratulateUsers() {
+async function notifyUsers() {
   const usersList = await userService.getAll();
-
   const today = new Date();
 
-  const date = today.getDate();
-  const month = today.getMonth() + 1;
-
   const filteredUsers = usersList.filter(user => {
-    const dateArr = user.dateOfBirth.split('.');
-    const userDate = +dateArr[0];
-    const userMonth = +dateArr[1];
-
-    return userDate === date && userMonth === month && user.chatId;
+    if (!user.lastOrderDate) return;
+    const daysFromLastOrder = differenceInCalendarDays(
+      user.lastOrderDate,
+      today
+    );
+    console.log('daysFromLastOrder', daysFromLastOrder);
+    if (daysFromLastOrder >= 0) return;
+    console.log(daysFromLastOrder % 30);
+    return daysFromLastOrder % 30 === 0;
   });
 
   console.log(filteredUsers);
   filteredUsers.forEach(user => {
     try {
-      congratulateUser(user.chatId);
+      notifyUser(user.chatId);
       console.log(`Пользователь с tgId ${user.telegramId} поздравлен`);
     } catch (error) {
       console.log(
@@ -39,15 +40,18 @@ async function congratulateUsers() {
   });
 }
 
-async function congratulateUser(userChatId: number) {
-  return await telegram.sendMessage(userChatId, 'тест рассылка!!');
+async function notifyUser(userChatId: number) {
+  return await telegram.sendMessage(
+    userChatId,
+    'Вы давно не совершали покупочки! Даем вам скидку на бутерброд и пиво'
+  );
 }
 
 async function bootstrap() {
   try {
     await AppDataSource.initialize();
     console.log('Data source for notifications initialized');
-    await congratulateUsers();
+    await notifyUsers();
   } catch (error) {
     console.log(error);
   }

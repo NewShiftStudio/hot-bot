@@ -13,7 +13,9 @@ class CardService {
   }
 
   async getAll() {
-    return await this.cardRepository.find();
+    return await this.cardRepository.find({
+      relations: ['user'],
+    });
   }
 
   async getOne(id: number) {
@@ -24,11 +26,9 @@ class CardService {
   }
 
   async getFreeCard() {
-    const freeCards = await this.cardRepository.find({
-      relations: {
-        user: false,
-      },
-    });
+    const cardsList = await this.getAll();
+    const freeCards = cardsList.filter(card => !card.user);
+    console.log(freeCards[0]);
     return freeCards[0];
   }
 

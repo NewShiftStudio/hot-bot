@@ -1,8 +1,8 @@
 import { toBuffer, ToBufferOptions } from 'bwip-js';
 import * as fs from 'fs';
-import list from './../cards.json';
-import { cardService } from './common/services/card.service';
-import { AppDataSource } from './database/appDataSourse';
+import list from '../../cards.json';
+import { cardService } from '../common/services/card.service';
+import { AppDataSource } from '../database/appDataSourse';
 
 const cardsList = list as CardData[];
 

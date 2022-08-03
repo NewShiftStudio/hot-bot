@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/main.ts",
-    "generate": "ts-node ./src/parseCardsList.ts",
-    "notifications": "ts-node ./src/scripts/notifications.ts",
+    "generate": "ts-node ./src/scripts/parseCardsList.ts",
+    "birthNotification": "ts-node ./src/scripts/birthNotification.ts",
+    "orderNotification": "ts-node ./src/scripts/lastOrderNotification.ts",
     "build": "rm -rf dist && tsc"
   },
   "repository": {
@@ -25,6 +26,7 @@
     "@types/bwip-js": "^3.0.0",
     "axios": "^0.27.2",
     "bwip-js": "^3.1.0",
+    "date-fns": "^2.29.1",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "jsbarcode": "^3.11.5",

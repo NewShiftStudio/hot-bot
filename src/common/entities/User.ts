@@ -28,6 +28,9 @@ export class User extends Base {
   @Column({ default: 0 })
   balance: number;
 
+  @Column({ nullable: true })
+  lastOrderDate: Date;
+
   @OneToOne(() => Card, card => card.user, {
     onDelete: 'SET NULL',
     nullable: true,
