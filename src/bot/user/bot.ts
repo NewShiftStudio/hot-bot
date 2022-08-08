@@ -1,5 +1,5 @@
 import { Markup, Telegraf, Telegram } from 'telegraf';
-import { questions } from './questions';
+import { questions } from '../../constants/questions';
 import { userService } from '../../common/services/user.service';
 import { validateDateOfBirth } from '../../helpers/dobValidator';
 import { validatePhoneNumber } from '../../helpers/phoneValidation';
@@ -17,6 +17,7 @@ import {
   CreateUserDto,
   SEX,
 } from '../../@types/dto/user/create.dto';
+import { formatDateToIiko } from '../../helpers/formatDate';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -237,6 +238,7 @@ bot.on('text', async ctx => {
       cardNumber: updatedUser.card.cardNumber,
       cardTrack: updatedUser.card.cardTrack,
       phone: updatedUser.phoneNumber,
+      birthday: formatDateToIiko(updatedUser.dateOfBirth),
       sex: SEX.NOT_SPECIFIED,
       consentStatus: ConsentStatus.GIVEN,
     };

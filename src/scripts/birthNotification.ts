@@ -10,7 +10,9 @@ if (!token) {
 const telegram = new Telegram(token);
 
 async function congratulateUsers() {
-  const usersList = await userService.getAll();
+  const usersList = await userService.getAll({
+    step: 'registered',
+  });
 
   const today = new Date();
 

@@ -1,11 +1,17 @@
 import { ValidationResult } from './../@types/entities/ValidationResult';
 
-const regExp = /8\d\d\d\d\d\d\d\d\d\d/;
+let PHONE_REGEX = /^(8)[0-9]{10}/;
 
-//format dd.mm.yyyy
 export function validatePhoneNumber(phoneNumber: string): ValidationResult {
-  return {
-    status: 'success',
-    message: '',
-  };
+  if (!PHONE_REGEX.test(phoneNumber)) {
+    return {
+      status: 'error',
+      message: 'Введите телефон в фермате 89999999999',
+    };
+  } else {
+    return {
+      status: 'success',
+      message: '',
+    };
+  }
 }
