@@ -4,7 +4,7 @@ import { Card } from './Card';
 
 @Entity('user')
 export class User extends Base {
-  @Column()
+  @Column({ unique: true })
   telegramId: number;
 
   @Column({ nullable: true })
@@ -19,17 +19,23 @@ export class User extends Base {
   @Column({ nullable: true })
   secondName: string;
 
-  @Column({ nullable: true })
+  @Column({ unique: true, nullable: true })
   phoneNumber: string;
 
   @Column({ nullable: true })
   dateOfBirth: string;
+
+  @Column({ default: '' })
+  iikoId: string;
 
   @Column({ default: 0 })
   balance: number;
 
   @Column({ nullable: true })
   lastOrderDate: Date;
+
+  @Column({ default: false })
+  canCratePosts: boolean;
 
   @OneToOne(() => Card, card => card.user, {
     onDelete: 'SET NULL',

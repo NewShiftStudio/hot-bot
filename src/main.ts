@@ -1,12 +1,12 @@
 import { AppDataSource } from './database/appDataSourse';
-import { bot } from './bot/bot';
+import { bot as userBot } from './bot/user/bot';
 
 export async function bootstrap() {
   try {
     await AppDataSource.initialize();
     console.log('Data Source has been initialized!');
-    await bot.launch();
-    console.log('Bot successfully launched!');
+    await userBot.launch();
+    console.log('User bot successfully launched!');
   } catch (error) {
     console.log(error);
   }
@@ -14,5 +14,9 @@ export async function bootstrap() {
 
 bootstrap();
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+  userBot.stop('SIGINT');
+});
+process.once('SIGTERM', () => {
+  userBot.stop('SIGTERM');
+});

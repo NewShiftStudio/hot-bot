@@ -31,8 +31,8 @@ class UserService {
     });
   }
 
-  async getAll() {
-    return await this.userRepository.find();
+  async getAll(user: Partial<User>) {
+    return await this.userRepository.find({ where: user });
   }
 
   async getById(id: number) {

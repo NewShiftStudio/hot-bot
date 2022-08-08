@@ -51,7 +51,7 @@ async function test() {
     await AppDataSource.initialize();
 
     console.log('data source initialized');
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < cardsList.length; i++) {
       generateBarCode(cardsList[i]);
     }
   } catch (error) {

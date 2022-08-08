@@ -2,7 +2,7 @@ import { Telegram } from 'telegraf';
 import { userService } from '../common/services/user.service';
 import { AppDataSource } from '../database/appDataSourse';
 
-const token = process.env.BOT_TOKEN;
+const token = process.env.USER_BOT_TOKEN;
 if (!token) {
   throw new Error('BOT_TOKEN must be provided!');
 }
