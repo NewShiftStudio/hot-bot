@@ -1,4 +1,4 @@
-import { WalletBalance } from './walletBalance';
+import { WalletBalance } from './WalletBalance';
 
 export type IikoUser = {
   id: string;

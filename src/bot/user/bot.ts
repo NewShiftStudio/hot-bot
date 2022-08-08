@@ -10,9 +10,13 @@ import { getDeclensionWordByCount } from '../../helpers/wordHelper';
 import { postService } from '../../common/services/post.service';
 import { User } from '../../common/entities/User';
 import axios from 'axios';
-import { AuthToken } from '../../@types/dto/auth/authToken';
-import { OrganizationsResponseDto } from '../../@types/dto/organization/response';
 import { IikoUser } from '../../@types/entities/IikoUser';
+import { iikoApi } from '../../api/iikoApi';
+import {
+  ConsentStatus,
+  CreateUserDto,
+  SEX,
+} from '../../@types/dto/user/create.dto';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -36,53 +40,6 @@ bot.command('balance', showBalance);
 
 bot.hears(SPEND_TEXT, spend);
 bot.command('spend', spend);
-
-bot.command('/test', async ctx => {
-  const telegramId = ctx.from.id;
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user) return;
-
-  const authToken = await getAuthToken();
-  if (!authToken) return;
-  console.log(authToken);
-  const organizationId = await getOrganizationId(authToken);
-  console.log(organizationId);
-  if (!organizationId) return;
-  const iikoUser = await getCustomerInfo(
-    authToken,
-    organizationId,
-    user.iikoId
-  );
-  console.log(iikoUser?.walletBalances[0]);
-
-  return;
-});
-
-bot.command('/add', async ctx => {
-  const telegramId = ctx.from.id;
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user) return;
-  const authToken = await getAuthToken();
-  if (!authToken) return;
-  const organizationId = await getOrganizationId(authToken);
-  if (!organizationId) return;
-  try {
-    const response = await axios.post(
-      'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/wallet/hold',
-      {
-        customerId: user.iikoId,
-        walletId: '01330000-6bec-ac1f-706b-08da7721127c',
-        sum: 200,
-        organizationId,
-      },
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }
-    );
-  } catch (error) {
-    console.log(error);
-  }
-});
 
 bot.start(async ctx => {
   const telegramId = ctx.message.from.id;
@@ -207,6 +164,12 @@ bot.hears('📋 Показать результат', async ctx => {
   );
 });
 
+bot.command('test', async ctx => {
+  const telegramId = ctx.from.id;
+
+  axios('https://c83a-176-100-243-197.eu.ngrok.io/files/05187910');
+});
+
 bot.on('text', async ctx => {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
@@ -268,27 +231,22 @@ bot.on('text', async ctx => {
     await userService.update(telegramId, { balance: 200 });
     const updatedUser = await userService.getByTelegramId(telegramId);
     if (!updatedUser) return;
-    const authToken = await getAuthToken();
-    if (!authToken) return;
-    const organizationId = await getOrganizationId(authToken);
-    const userData: Partial<IikoUser> = {
+    const newUserData: CreateUserDto = {
       name: updatedUser.firstName,
       surName: updatedUser.secondName,
       cardNumber: updatedUser.card.cardNumber,
       cardTrack: updatedUser.card.cardTrack,
       phone: updatedUser.phoneNumber,
-      organizationId,
+      sex: SEX.NOT_SPECIFIED,
+      consentStatus: ConsentStatus.GIVEN,
     };
-    const iikoUserId = await createOrUpdateIikoUser(authToken, userData);
-    if (!iikoUserId) return;
+    const iikoUserId = await iikoApi.createUser(newUserData);
     await userService.update(telegramId, {
-      iikoId: iikoUserId.id,
+      iikoId: iikoUserId,
     });
     console.log(iikoUserId);
     await ctx.reply('✅ Скидочная карта создана');
-    await ctx.reply(
-      '❗️ Интеграция с iiko пока не работает. По плану на этом этапе уже создана и назначена карта. Теперь все эти данные отправляются в iiko и назначается нормальный баланс.\n\nP.S. Сейчас он замокан'
-    );
+
     return ctx.reply(
       END_REGISTRATION_TEXT,
       Markup.keyboard([[SHOW_BALANCE_TEXT, SPEND_TEXT]])
@@ -298,13 +256,6 @@ bot.on('text', async ctx => {
   }
 
   return ctx.reply(questions[nextStep].label);
-});
-
-bot.command('add', async ctx => {
-  const authToken = await getAuthToken();
-  if (!authToken) return;
-  const organizationId = await getOrganizationId(authToken);
-  console.log(organizationId);
 });
 
 bot.on('photo', async ctx => {
@@ -445,92 +396,46 @@ async function showBalance(ctx: any) {
     return ctx.reply(
       'Чтобы увидеть баланс, пожалуйста, завершите регистрацию.'
     );
+  const balance = await iikoApi.getUserBalance(user.iikoId);
+  if (!balance && balance !== 0) {
+    return ctx.reply(
+      'Произошла ошибка получения баланса. Обратитесь к администратору'
+    );
+  }
+  await userService.update(telegramId, {
+    balance,
+  });
   return ctx.replyWithMarkdown(
-    `Сейчас на вашем балансе: _${user.balance} ${getDeclensionWordByCount(
+    `Сейчас на вашем балансе: _${balance} ${getDeclensionWordByCount(
       user.balance,
       ['баллов', 'балл', 'балла']
     )}_.`
   );
 }
 
-async function getAuthToken() {
-  try {
-    const response = await axios.post(
-      'https://api-ru.iiko.services/api/1/access_token',
-      {
-        apiLogin: 'ae6300eb-be2',
-      }
-    );
-    const authData = response.data as AuthToken;
-    return authData.token;
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-}
-
-async function getOrganizationId(authToken: string) {
-  try {
-    const response = await axios.post(
-      'https://api-ru.iiko.services/api/1/organizations',
-      {
-        returnAdditionalInfo: false,
-        includeDisabled: false,
-      },
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }
-    );
-    const data = response.data as OrganizationsResponseDto;
-    return data.organizations[0].id;
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-}
-
-async function createOrUpdateIikoUser(
-  authToken: string,
-  user: Partial<IikoUser>
-) {
-  try {
-    const response = await axios.post(
-      'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/create_or_update',
-      user,
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }
-    );
-    return response.data as { id: string };
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-}
-
-async function getCustomerInfo(
-  authToken: string,
-  organizationId: string,
-  id: string
-) {
-  try {
-    const response = await axios.post(
-      'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/info',
-      {
-        type: 'id',
-        id,
-        organizationId,
-      },
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      }
-    );
-    return response.data as IikoUser;
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-}
+// async function getCustomerInfo(
+//   authToken: string,
+//   organizationId: string,
+//   id: string
+// ) {
+//   try {
+//     const response = await axios.post(
+//       'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/info',
+//       {
+//         type: 'id',
+//         id,
+//         organizationId,
+//       },
+//       {
+//         headers: { Authorization: `Bearer ${authToken}` },
+//       }
+//     );
+//     return response.data as IikoUser;
+//   } catch (error) {
+//     console.log(error);
+//     return;
+//   }
+// }
 
 async function spend(ctx: any) {
   const telegramId = ctx.message.from.id;
@@ -538,7 +443,7 @@ async function spend(ctx: any) {
   if (!user || user.step !== 'registered')
     return ctx.reply('Для списания баллов необходимо зарегистрироваться');
   return ctx.replyWithPhoto(
-    'https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=830&q=80',
+    `https://c83a-176-100-243-197.eu.ngrok.io/files/${user.card.cardNumber}`,
     {
       caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
     }
