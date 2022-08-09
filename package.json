@@ -4,9 +4,9 @@
   "description": "Telegram bot, sqlite, web hooks, amo, ico",
   "main": "index.js",
   "scripts": {
-    "start:dev": "nodemon ./src/main.ts",
+    "start:dev": "NODE_ENV=development nodemon ./src/main.ts",
     "build": "rm -rf dist && tsc",
-    "start:prod": "node ./dist/src/main.js",
+    "start:prod": "NODE_ENV=production node ./dist/src/main.js",
     "generate": "node ./dist/src/scripts/generateBarCodes",
     "birthNotification": "node ./dist/src/scripts/birthNotification",
     "orderNotification": "node ./dist/src/scripts/lastOrderNotification"

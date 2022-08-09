@@ -1,23 +1,23 @@
 import { Markup, Telegraf, Telegram } from 'telegraf';
-import { questions } from '../../constants/questions';
-import { userService } from '../../common/services/user.service';
-import { validateDateOfBirth } from '../../helpers/dobValidator';
-import { validatePhoneNumber } from '../../helpers/phoneValidation';
-import { ValidationResult } from '../../@types/entities/ValidationResult';
+import { questions } from '../constants/questions';
+import { userService } from '../common/services/user.service';
+import { validateDateOfBirth } from '../helpers/dobValidator';
+import { validatePhoneNumber } from '../helpers/phoneValidation';
+import { ValidationResult } from '../@types/entities/ValidationResult';
 
 import dotenv from 'dotenv';
-import { getDeclensionWordByCount } from '../../helpers/wordHelper';
-import { postService } from '../../common/services/post.service';
-import { User } from '../../common/entities/User';
+import { getDeclensionWordByCount } from '../helpers/wordHelper';
+import { postService } from '../common/services/post.service';
+import { User } from '../common/entities/User';
 import axios from 'axios';
-import { IikoUser } from '../../@types/entities/IikoUser';
-import { iikoApi } from '../../api/iikoApi';
+import { IikoUser } from '../@types/entities/IikoUser';
+import { iikoApi } from '../api/iikoApi';
 import {
   ConsentStatus,
   CreateUserDto,
   SEX,
-} from '../../@types/dto/user/create.dto';
-import { formatDateToIiko } from '../../helpers/formatDate';
+} from '../@types/dto/user/create.dto';
+import { formatDateToIiko } from '../helpers/formatDate';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
