@@ -78,7 +78,9 @@ bot.command('delete', async ctx => {
 });
 
 bot.command('/registerAdmin', async ctx => {
-  if (ctx.message.text.slice(14).trim() !== process.env.POST_PASSWORD) {
+  if (
+    ctx.message.text.slice(14).trim() !== process.env.REGISTER_ADMIN_PASSWORD
+  ) {
     return;
   }
 
