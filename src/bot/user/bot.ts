@@ -167,12 +167,6 @@ bot.hears('📋 Показать результат', async ctx => {
   );
 });
 
-bot.command('test', async ctx => {
-  const telegramId = ctx.from.id;
-
-  axios('https://c83a-176-100-243-197.eu.ngrok.io/files/05187910');
-});
-
 bot.on('text', async ctx => {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
@@ -393,6 +387,7 @@ async function validateStep(
   }
 }
 
+// FIXME: убрать any
 async function showBalance(ctx: any) {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
@@ -417,37 +412,18 @@ async function showBalance(ctx: any) {
   );
 }
 
-// async function getCustomerInfo(
-//   authToken: string,
-//   organizationId: string,
-//   id: string
-// ) {
-//   try {
-//     const response = await axios.post(
-//       'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/info',
-//       {
-//         type: 'id',
-//         id,
-//         organizationId,
-//       },
-//       {
-//         headers: { Authorization: `Bearer ${authToken}` },
-//       }
-//     );
-//     return response.data as IikoUser;
-//   } catch (error) {
-//     console.log(error);
-//     return;
-//   }
-// }
-
+// FIXME: убрать any
 async function spend(ctx: any) {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
   if (!user || user.step !== 'registered')
     return ctx.reply('Для списания баллов необходимо зарегистрироваться');
   return ctx.replyWithPhoto(
-    `https://c83a-176-100-243-197.eu.ngrok.io/files/${user.card.cardNumber}`,
+    [
+      process.env.PUBLIC_FOLDER,
+      process.env.BAR_CODES_FOLDER,
+      user.card.cardNumber + '.png',
+    ].join(''),
     {
       caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
     }

@@ -4,13 +4,12 @@
   "description": "Telegram bot, sqlite, web hooks, amo, ico",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./src/main.ts",
-    "test": "nodemon ./src/helpers/phoneValidation.ts",
-    "gen": "ts-node ./src/scripts/generateOneCode.ts",
-    "generate": "ts-node ./src/scripts/parseCardsList.ts",
-    "birthNotification": "ts-node ./src/scripts/birthNotification.ts",
-    "orderNotification": "ts-node ./src/scripts/lastOrderNotification.ts",
-    "build": "rm -rf dist && tsc"
+    "start:dev": "nodemon ./src/main.ts",
+    "build": "rm -rf dist && tsc",
+    "start:prod": "node ./dist/src/main.js",
+    "generate": "node ./dist/src/scripts/generateBarCodes",
+    "birthNotification": "node ./dist/src/scripts/birthNotification",
+    "orderNotification": "node ./dist/src/scripts/lastOrderNotification"
   },
   "repository": {
     "type": "git",

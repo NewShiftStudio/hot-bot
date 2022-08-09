@@ -24,7 +24,7 @@ const barCodeOptions: Omit<ToBufferOptions, 'text'> = {
 
 export function generateBarCode(card: CardData) {
   console.log(card.cardNumber);
-  const fullPath = `${process.env.PUBLIC_PATH}${process.env.BAR_CODES_FOLDER}/${card.cardNumber}.png`;
+  const fullPath = `${process.env.PUBLIC_FOLDER}${process.env.BAR_CODES_FOLDER}/${card.cardNumber}.png`;
   toBuffer({ text: card.cardNumber, ...barCodeOptions }, (error, img) => {
     if (error) {
       console.log(error);
