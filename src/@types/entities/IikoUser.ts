@@ -3,7 +3,7 @@ import { WalletBalance } from './WalletBalance';
 export type IikoUser = {
   id: string;
   phone?: string;
-  cardTrack?: string
+  cardTrack?: string;
   cardNumber?: string;
   name?: string;
   middleName?: string;
