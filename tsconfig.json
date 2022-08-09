@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "./dist",
+    "typeRoots": ["./src/@types"],
     "moduleResolution": "node",
     "removeComments": true,
     "noImplicitAny": true,
