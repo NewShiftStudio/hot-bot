@@ -8,8 +8,7 @@ export const questions: any = {
     nextStep: 'phoneNumber',
   },
   phoneNumber: {
-    label:
-      'Ваш номер телефона\n\nВалидации нет, но зато есть проверка на существование в бд',
+    label: 'Ваш номер телефона',
     nextStep: 'dateOfBirth',
   },
   dateOfBirth: {

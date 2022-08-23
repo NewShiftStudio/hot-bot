@@ -32,7 +32,7 @@ async function notifyUsers() {
   filteredUsers.forEach(user => {
     try {
       notifyUser(user.chatId);
-      console.log(`Пользователь с tgId ${user.telegramId} поздравлен`);
+      console.log(`Пользователь с tgId ${user.telegramId} оповещен`);
     } catch (error) {
       console.log(
         `Возникла ошибка при поздравлении пользователя с tgId ${user.telegramId}`

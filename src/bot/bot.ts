@@ -35,6 +35,7 @@ const END_REGISTRATION_TEXT =
   'Поздравляем, вы успешно зарегистрировались!\n\nМы уже начислили 200 приветственных баллов на ваш счёт. Теперь вы можете копить и тратить их в Est. 1993.\n\nЧтобы проверить баланс, нажмите на кнопку «Показать баланс».';
 const SHOW_BALANCE_TEXT = '💰 Показать баланс';
 const SPEND_TEXT = '💳 Использовать баллы';
+const MINUTE = 60 * 1000;
 
 bot.hears(SHOW_BALANCE_TEXT, showBalance);
 bot.command('balance', showBalance);
@@ -44,6 +45,7 @@ bot.command('spend', spend);
 
 bot.start(async ctx => {
   const telegramId = ctx.message.from.id;
+
   const user = await userService.getByTelegramId(telegramId);
   if (!user) {
     return ctx.reply(
@@ -395,15 +397,22 @@ async function showBalance(ctx: any) {
     return ctx.reply(
       'Чтобы увидеть баланс, пожалуйста, завершите регистрацию.'
     );
+
+  const messageId = (await ctx.reply('Загрузка...')).message_id;
+
   const balance = await iikoApi.getUserBalance(user.iikoId);
   if (!balance && balance !== 0) {
     return ctx.reply(
       'Произошла ошибка получения баланса. Обратитесь к администратору'
     );
   }
+
   await userService.update(telegramId, {
     balance,
   });
+
+  await ctx.deleteMessage(messageId);
+
   return ctx.replyWithMarkdown(
     `Сейчас на вашем балансе: _${balance} ${getDeclensionWordByCount(
       user.balance,
@@ -415,17 +424,22 @@ async function showBalance(ctx: any) {
 // FIXME: убрать any
 async function spend(ctx: any) {
   const telegramId = ctx.message.from.id;
+
   const user = await userService.getByTelegramId(telegramId);
   if (!user || user.step !== 'registered')
     return ctx.reply('Для списания баллов необходимо зарегистрироваться');
-  return ctx.replyWithPhoto(
-    [
-      process.env.PUBLIC_FOLDER,
-      process.env.BAR_CODES_FOLDER,
-      user.card.cardNumber + '.png',
-    ].join(''),
-    {
-      caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
-    }
-  );
+
+  await userService.update(telegramId, {
+    lastOrderDate: new Date(),
+  });
+
+  const cardMessage = await ctx.replyWithPhoto(user.card.barCodeLink, {
+    caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
+  });
+
+  const cardMessageId = cardMessage.message_id;
+
+  setTimeout(() => {
+    ctx.deleteMessage(cardMessageId);
+  }, 5 * MINUTE);
 }

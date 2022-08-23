@@ -1,6 +1,13 @@
+import { differenceInDays } from 'date-fns';
 import { Telegram } from 'telegraf';
+import { User } from '../common/entities/User';
 import { userService } from '../common/services/user.service';
 import { AppDataSource } from '../database/appDataSourse';
+
+type Congratulation = {
+  user: User;
+  text: string;
+};
 
 const token = process.env.USER_BOT_TOKEN;
 if (!token) {
@@ -15,22 +22,38 @@ async function congratulateUsers() {
   });
 
   const today = new Date();
+  const currentYear = today.getFullYear();
 
-  const date = today.getDate();
-  const month = today.getMonth() + 1;
-
-  const filteredUsers = usersList.filter(user => {
+  const congratulationsList: (Congratulation | null)[] = usersList.map(user => {
     const dateArr = user.dateOfBirth.split('.');
     const userDate = +dateArr[0];
-    const userMonth = +dateArr[1];
+    const userMonth = +dateArr[1] - 1;
+    const userBirthDate = new Date(currentYear, userMonth, userDate);
 
-    return userDate === date && userMonth === month && user.chatId;
+    const difference = differenceInDays(userBirthDate, today) + 1;
+    console.log(difference);
+
+    switch (difference) {
+      case 7:
+        return {
+          user,
+          text: 'Ещё не выбрал место, где отмечать др? Лови персональную скидку в 20% и приходи уже к нам',
+        };
+      case 14:
+        return {
+          user,
+          text: 'Ещё не выбрал, где отмечать др? А вот они мы, такие котики, приходи к нам',
+        };
+      default:
+        return null;
+    }
   });
 
-  console.log(filteredUsers);
-  filteredUsers.forEach(user => {
+  congratulationsList.forEach(congratulation => {
+    if (!congratulation) return;
+    const { user, text } = congratulation;
     try {
-      congratulateUser(user.chatId);
+      congratulateUser(user.chatId, text);
       console.log(`Пользователь с tgId ${user.telegramId} поздравлен`);
     } catch (error) {
       console.log(
@@ -41,8 +64,8 @@ async function congratulateUsers() {
   });
 }
 
-async function congratulateUser(userChatId: number) {
-  return await telegram.sendMessage(userChatId, 'С днем рождения!');
+async function congratulateUser(userChatId: number, text: string) {
+  return await telegram.sendMessage(userChatId, text);
 }
 
 async function bootstrap() {

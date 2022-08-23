@@ -8,6 +8,8 @@
     "build": "rm -rf dist && tsc",
     "start:prod": "NODE_ENV=production node ./dist/src/main.js",
     "generate": "node ./dist/src/scripts/generateBarCodes",
+    "birthNotification:dev": "ts-node ./src/scripts/birthNotification",
+    "orderNotification:dev": "ts-node ./src/scripts/lastOrderNotification",
     "birthNotification": "node ./dist/src/scripts/birthNotification",
     "orderNotification": "node ./dist/src/scripts/lastOrderNotification"
   },
