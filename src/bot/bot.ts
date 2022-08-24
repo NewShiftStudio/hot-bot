@@ -433,13 +433,27 @@ async function spend(ctx: any) {
     lastOrderDate: new Date(),
   });
 
-  const cardMessage = await ctx.replyWithPhoto(user.card.barCodeLink, {
-    caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
-  });
+  try {
+    const cardMessage = await ctx.replyWithPhoto(
+      [
+        process.env.USER_SERVER_URL,
+        process.env.PUBLIC_FOLDER,
+        process.env.BAR_CODES_FOLDER,
+      ].join('/'),
+      {
+        caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
+      }
+    );
 
-  const cardMessageId = cardMessage.message_id;
+    const cardMessageId = cardMessage.message_id;
 
-  setTimeout(() => {
-    ctx.deleteMessage(cardMessageId);
-  }, 5 * MINUTE);
+    setTimeout(() => {
+      ctx.deleteMessage(cardMessageId);
+    }, 5 * MINUTE);
+  } catch (error) {
+    console.log(error);
+    ctx.reply(
+      `Не удалось получить штрих-код карты.\n\nНомер вашей карт: ${user.card.cardNumber}`
+    );
+  }
 }

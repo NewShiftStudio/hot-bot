@@ -24,7 +24,12 @@ const barCodeOptions: Omit<ToBufferOptions, 'text'> = {
 
 export function generateBarCode(card: CardData) {
   console.log(card.cardNumber);
-  const fullPath = `${process.env.PUBLIC_FOLDER}${process.env.BAR_CODES_FOLDER}/${card.cardNumber}.png`;
+  const fullPath = [
+    process.env.PUBLIC_FOLDER,
+    process.env.BAR_CODES_FOLDER,
+    `${card.cardNumber}.png`,
+  ].join('/');
+
   toBuffer({ text: card.cardNumber, ...barCodeOptions }, (error, img) => {
     if (error) {
       console.log(error);
@@ -46,7 +51,7 @@ export function generateBarCode(card: CardData) {
   });
 }
 
-async function test() {
+async function bootstrap() {
   try {
     await AppDataSource.initialize();
 
@@ -59,4 +64,4 @@ async function test() {
   }
 }
 
-test();
+bootstrap();
