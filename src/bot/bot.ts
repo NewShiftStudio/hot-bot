@@ -425,9 +425,13 @@ async function showBalance(ctx: any) {
 async function spend(ctx: any) {
   const telegramId = ctx.message.from.id;
 
+  const messageId = (await ctx.reply('Загрузка...')).message_id;
+
   const user = await userService.getByTelegramId(telegramId);
-  if (!user || user.step !== 'registered')
+  if (!user || user.step !== 'registered') {
+    ctx.deleteMessage(messageId);
     return ctx.reply('Для списания баллов необходимо зарегистрироваться');
+  }
 
   await userService.update(telegramId, {
     lastOrderDate: new Date(),
@@ -435,11 +439,13 @@ async function spend(ctx: any) {
 
   try {
     const cardMessage = await ctx.replyWithPhoto(
-      [process.env.USER_SERVER_URL, user.card.barCodeLink].join('/'),
+      [process.env.PUBLIC_URL, user.card.barCodeLink].join('/'),
       {
         caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
       }
     );
+
+    ctx.deleteMessage(messageId);
 
     const cardMessageId = cardMessage.message_id;
 
@@ -448,6 +454,7 @@ async function spend(ctx: any) {
     }, 5 * MINUTE);
   } catch (error) {
     console.log(error);
+    ctx.deleteMessage(messageId);
     ctx.reply(
       `Не удалось получить штрих-код карты.\n\nНомер вашей карт: ${user.card.cardNumber}`
     );
