@@ -435,11 +435,7 @@ async function spend(ctx: any) {
 
   try {
     const cardMessage = await ctx.replyWithPhoto(
-      [
-        process.env.USER_SERVER_URL,
-        process.env.PUBLIC_FOLDER,
-        process.env.BAR_CODES_FOLDER,
-      ].join('/'),
+      [process.env.USER_SERVER_URL, user.card.barCodeLink].join('/'),
       {
         caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
       }
