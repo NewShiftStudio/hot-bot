@@ -1,12 +1,12 @@
 module.exports = {
-  apps: [
-    {
-      name: 'est1993-bot',
-      script: 'dist/src/main.js',
-      instances: 1,
-      autorestart: true,
-      watch: false,
-      max_memory_restart: '100M',
+  apps: [{
+    name: "hot-bot",
+    script: "./dist/src/main.js",
+    env_production: {
+      NODE_ENV: "production"
     },
-  ],
-};
+    env_development: {
+      NODE_ENV: "development"
+    }
+  }]
+}
