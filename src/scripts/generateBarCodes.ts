@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import list from '../../cards.json';
 import { cardService } from '../common/services/card.service';
 import { AppDataSource } from '../database/appDataSourse';
+import { wait } from '../helpers/wait';
 
 const cardsList = list as CardData[];
 
@@ -30,9 +31,11 @@ export function generateBarCode(card: CardData) {
     if (error) {
       console.log(error);
     }
+
     await fs.promises.writeFile(fullPath, img, {
       encoding: 'base64',
     });
+    await wait(10);
 
     cardService.create({
       cardNumber: card.cardNumber,
