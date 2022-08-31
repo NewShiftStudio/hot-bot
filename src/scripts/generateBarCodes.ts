@@ -24,24 +24,15 @@ const barCodeOptions: Omit<ToBufferOptions, 'text'> = {
 
 export function generateBarCode(card: CardData) {
   console.log(card.cardNumber);
-  const fullPath = [
-    process.env.PUBLIC_FOLDER,
-    process.env.BAR_CODES_FOLDER,
-    `${card.cardNumber}.png`,
-  ].join('/');
+  const fullPath = [process.env.PUBLIC_FOLDER, process.env.BAR_CODES_FOLDER, `${card.cardNumber}.png`].join('/');
 
-  toBuffer({ text: card.cardNumber, ...barCodeOptions }, (error, img) => {
+  toBuffer({ text: card.cardNumber, ...barCodeOptions }, async (error, img) => {
     if (error) {
       console.log(error);
     }
-    fs.writeFile(
-      fullPath,
-      img,
-      {
-        encoding: 'base64',
-      },
-      () => {}
-    );
+    await fs.promises.writeFile(fullPath, img, {
+      encoding: 'base64',
+    });
 
     cardService.create({
       cardNumber: card.cardNumber,
