@@ -35,7 +35,7 @@ export function generateBarCode(card: CardData) {
     await fs.promises.writeFile(fullPath, img, {
       encoding: 'base64',
     });
-    await wait(10);
+    await wait(200);
 
     cardService.create({
       cardNumber: card.cardNumber,
