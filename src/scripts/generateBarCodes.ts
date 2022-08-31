@@ -35,7 +35,6 @@ export function generateBarCode(card: CardData) {
     await fs.promises.writeFile(fullPath, img, {
       encoding: 'base64',
     });
-    await wait(200);
 
     cardService.create({
       cardNumber: card.cardNumber,
@@ -52,6 +51,7 @@ async function bootstrap() {
     console.log('data source initialized');
     for (let i = 0; i < cardsList.length; i++) {
       generateBarCode(cardsList[i]);
+      await wait(50);
     }
   } catch (error) {
     console.log(error);
