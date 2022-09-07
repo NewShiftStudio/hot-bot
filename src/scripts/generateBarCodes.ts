@@ -9,6 +9,7 @@ const cardsList = list as CardData[];
 
 export type CardData = {
   cardTrack: string;
+  city: string;
   cardNumber: string;
 };
 
@@ -25,7 +26,11 @@ const barCodeOptions: Omit<ToBufferOptions, 'text'> = {
 
 export function generateBarCode(card: CardData) {
   console.log(card.cardNumber);
-  const fullPath = [process.env.PUBLIC_FOLDER, process.env.BAR_CODES_FOLDER, `${card.cardNumber}.png`].join('/');
+  const fullPath = [
+    process.env.PUBLIC_FOLDER,
+    process.env.BAR_CODES_FOLDER,
+    `${card.cardNumber}.png`,
+  ].join('/');
 
   toBuffer({ text: card.cardNumber, ...barCodeOptions }, async (error, img) => {
     if (error) {
@@ -36,9 +41,14 @@ export function generateBarCode(card: CardData) {
       encoding: 'base64',
     });
 
+    let city = card.city;
+    if (city !== 'MSK' && city !== 'SPB') {
+      city = 'SPB';
+    }
     cardService.create({
       cardNumber: card.cardNumber,
       cardTrack: card.cardTrack,
+      city,
       barCodeLink: fullPath,
     });
   });
