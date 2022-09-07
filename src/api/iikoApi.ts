@@ -6,28 +6,40 @@ import { CreateUserDto } from '../@types/dto/user/create.dto';
 import { UpdateUserDto } from '../@types/dto/user/update.dto';
 import dotenv from 'dotenv';
 import { IikoUser } from '../@types/entities/IikoUser';
+import { getUserCity } from '../helpers/getUserCity';
 dotenv.config();
 
 export class IikoApi {
-  constructor(private apiLogin: string) {}
-  async getAuthToken() {
+  constructor(private MSKApiLogin: string, private SPBApiLogin: string) {}
+  async getAuthToken(city: 'MSK' | 'SPB') {
     try {
-      const response = await axios.post(
-        'https://api-ru.iiko.services/api/1/access_token',
-        {
-          apiLogin: 'ae6300eb-be2',
-        }
-      );
-      const authData = response.data as AuthToken;
-      return authData.token;
+      if (city === 'SPB') {
+        const response = await axios.post(
+          'https://api-ru.iiko.services/api/1/access_token',
+          {
+            apiLogin: this.SPBApiLogin,
+          }
+        );
+        const authData = response.data as AuthToken;
+        return authData.token;
+      } else {
+        const response = await axios.post(
+          'https://api-ru.iiko.services/api/1/access_token',
+          {
+            apiLogin: this.MSKApiLogin,
+          }
+        );
+        const authData = response.data as AuthToken;
+        return authData.token;
+      }
     } catch (error) {
       console.log(error);
       return;
     }
   }
 
-  async getOrganizationId() {
-    const authToken = await this.getAuthToken();
+  async getOrganizationId(city: 'MSK' | 'SPB') {
+    const authToken = await this.getAuthToken(city);
     if (!authToken) return;
 
     try {
@@ -50,9 +62,13 @@ export class IikoApi {
   }
 
   async createUser(user: CreateUserDto): Promise<string | undefined> {
-    const authToken = await this.getAuthToken();
+    const userCity = getUserCity(user.city);
+    console.log(userCity);
+
+    const authToken = await this.getAuthToken(userCity);
     if (!authToken) return;
-    const organizationId = await this.getOrganizationId();
+    const organizationId = await this.getOrganizationId(userCity);
+    console.log('organizationId :', organizationId);
     if (!organizationId) return;
 
     try {
@@ -72,9 +88,10 @@ export class IikoApi {
   }
 
   async updateUser(user: UpdateUserDto): Promise<string | undefined> {
-    const authToken = await this.getAuthToken();
+    const userCity = getUserCity(user.city);
+    const authToken = await this.getAuthToken(userCity);
     if (!authToken) return;
-    const organizationId = await this.getOrganizationId();
+    const organizationId = await this.getOrganizationId(userCity);
     if (!organizationId) return;
 
     try {
@@ -93,17 +110,21 @@ export class IikoApi {
     }
   }
 
-  async getUserBalance(id: string): Promise<number | undefined> {
-    const authToken = await this.getAuthToken();
+  async getUserBalance(
+    iikoId: string,
+    city: string
+  ): Promise<number | undefined> {
+    const userCity = getUserCity(city);
+    const authToken = await this.getAuthToken(userCity);
     if (!authToken) return;
-    const organizationId = await this.getOrganizationId();
+    const organizationId = await this.getOrganizationId(userCity);
     if (!organizationId) return;
 
     try {
       const response = await axios.post(
         'https://api-ru.iiko.services/api/1/loyalty/iiko/customer/info',
         {
-          id,
+          id: iikoId,
           type: 'id',
           organizationId,
         },
@@ -125,4 +146,7 @@ export class IikoApi {
   }
 }
 
-export const iikoApi = new IikoApi(process.env.IIKO_API_LOGIN || '');
+export const iikoApi = new IikoApi(
+  process.env.IIKO_API_LOGIN_MSK || '',
+  process.env.IIKO_API_LOGIN_SPB || ''
+);

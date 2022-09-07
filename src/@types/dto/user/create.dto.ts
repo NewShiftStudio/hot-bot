@@ -12,6 +12,7 @@ export enum SEX {
 
 export type CreateUserDto = {
   name: string;
+  city: string;
   phone?: string;
   surName?: string;
   birthday?: string; //yyyy-MM-dd HH:mm:ss.fff

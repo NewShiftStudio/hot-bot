@@ -2,6 +2,7 @@ import { ConsentStatus, SEX } from './create.dto';
 
 export type UpdateUserDto = {
   id: string;
+  city: string;
   name?: string;
   phone?: string;
   surName?: string;
