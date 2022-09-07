@@ -255,7 +255,57 @@ bot.on('text', async ctx => {
     );
   }
 
-  return ctx.reply(questions[nextStep].label);
+  const nextQuestion = questions[nextStep];
+
+  if (nextQuestion.answers) {
+    const buttons = nextQuestion.answers.map(answer =>
+      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
+    );
+    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
+  }
+  return ctx.reply(nextQuestion.label);
+});
+
+bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return ctx.answerCbQuery('Произошла ошибка');
+
+  ctx.answerCbQuery();
+
+  const actionsString = ctx.match[0];
+  const [_, step, value] = actionsString.split('_');
+
+  if (!step || !value) return;
+  const question = questions[step];
+  if (!question) return;
+  const nextStep = question.nextStep;
+
+  const answerLabel =
+    question.answers?.find(answer => answer.value === value)?.label || '';
+  ctx.editMessageText(`Ваш город -  _${answerLabel}_`, {
+    parse_mode: 'Markdown',
+  });
+  try {
+    await userService.update(telegramId, {
+      [step]: value,
+      step: nextStep,
+    });
+  } catch (error) {
+    console.log(error);
+    return ctx.reply(
+      'Не удалось сохранить данные. Обратитесь к администратору'
+    );
+  }
+
+  const nextQuestion = questions[nextStep];
+
+  if (nextQuestion.answers) {
+    const buttons = nextQuestion.answers.map(answer =>
+      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
+    );
+    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
+  }
+  return ctx.reply(nextQuestion.label);
 });
 
 bot.on('photo', async ctx => {
