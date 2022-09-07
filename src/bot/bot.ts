@@ -18,6 +18,7 @@ import {
   SEX,
 } from '../@types/dto/user/create.dto';
 import { formatDateToIiko } from '../helpers/formatDate';
+import { createVoidZero } from 'typescript';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -188,8 +189,13 @@ bot.on('text', async ctx => {
   if (step === 'registered') {
     return;
   }
-  const answer = ctx.message.text;
+
   const question = questions[step];
+
+  if (question.answers)
+    return ctx.reply('Пожалуйста, выберите ответ из списка');
+
+  const answer = ctx.message.text;
 
   const validationResult = await validateStep(step, answer);
 
@@ -229,21 +235,21 @@ bot.on('text', async ctx => {
     const updatedUser = await setCardToUser(user.id);
     if (!updatedUser)
       return ctx.reply('Ошибка при выдаче карты. Обратитесь к администратору');
-    const newUserData: CreateUserDto = {
-      name: updatedUser.firstName,
-      surName: updatedUser.secondName,
-      cardNumber: updatedUser.card.cardNumber,
-      cardTrack: updatedUser.card.cardTrack,
-      phone: updatedUser.phoneNumber,
-      birthday: formatDateToIiko(updatedUser.dateOfBirth),
-      sex: SEX.NOT_SPECIFIED,
-      consentStatus: ConsentStatus.GIVEN,
-    };
-    const iikoUserId = await iikoApi.createUser(newUserData);
-    await userService.update(telegramId, {
-      iikoId: iikoUserId,
-    });
-    console.log(iikoUserId);
+    // const newUserData: CreateUserDto = {
+    //   name: updatedUser.firstName,
+    //   surName: updatedUser.secondName,
+    //   cardNumber: updatedUser.card.cardNumber,
+    //   cardTrack: updatedUser.card.cardTrack,
+    //   phone: updatedUser.phoneNumber,
+    //   birthday: formatDateToIiko(updatedUser.dateOfBirth),
+    //   sex: SEX.NOT_SPECIFIED,
+    //   consentStatus: ConsentStatus.GIVEN,
+    // };
+    // const iikoUserId = await iikoApi.createUser(newUserData);
+    // await userService.update(telegramId, {
+    //   iikoId: iikoUserId,
+    // });
+    // console.log(iikoUserId);
     await ctx.reply('✅ Скидочная карта создана');
 
     return ctx.reply(
