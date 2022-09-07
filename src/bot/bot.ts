@@ -226,10 +226,9 @@ bot.on('text', async ctx => {
   }
 
   if (nextStep === 'registered') {
-    await userService.setCard(user.id);
-    await userService.update(telegramId, { balance: 200 });
-    const updatedUser = await userService.getByTelegramId(telegramId);
-    if (!updatedUser) return;
+    const updatedUser = await setCardToUser(user.id);
+    if (!updatedUser)
+      return ctx.reply('Ошибка при выдаче карты. Обратитесь к администратору');
     const newUserData: CreateUserDto = {
       name: updatedUser.firstName,
       surName: updatedUser.secondName,
@@ -437,6 +436,15 @@ async function validateStep(
         message: '',
       };
   }
+}
+
+async function setCardToUser(userId: number) {
+  try {
+    return await userService.setCard(userId);
+  } catch (error) {
+    console.log(`Ошибка выдачи карты пользователю ${userId}`);
+  }
+  return;
 }
 
 // FIXME: убрать any
