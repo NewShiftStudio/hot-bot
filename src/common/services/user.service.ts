@@ -45,7 +45,7 @@ class UserService {
     if (user.card) {
       return;
     }
-    const card = await cardService.getFreeCard();
+    const card = await cardService.getFreeCard(user.city);
     user.card = card;
     await cardService.update(card.id, { user });
     return await this.userRepository.save(user);

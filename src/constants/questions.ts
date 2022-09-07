@@ -1,10 +1,20 @@
-export const questions: any = {
+import { Question } from '../@types/entities/Questions';
+
+export const questions: Record<string, Question> = {
   firstName: {
     label: 'Ваше имя',
     nextStep: 'secondName',
   },
   secondName: {
     label: 'Ваша фамилия',
+    nextStep: 'city',
+  },
+  city: {
+    label: 'Из какого вы города?',
+    answers: [
+      { label: 'Москва', value: 'MSK' },
+      { label: 'Санкт-Петербург', value: 'SPB' },
+    ],
     nextStep: 'phoneNumber',
   },
   phoneNumber: {

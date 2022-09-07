@@ -19,6 +19,9 @@ export class User extends Base {
   @Column({ nullable: true })
   secondName: string;
 
+  @Column({ nullable: true })
+  city: string;
+
   @Column({ unique: true, nullable: true })
   phoneNumber: string;
 

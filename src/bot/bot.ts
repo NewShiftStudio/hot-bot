@@ -18,6 +18,7 @@ import {
   SEX,
 } from '../@types/dto/user/create.dto';
 import { formatDateToIiko } from '../helpers/formatDate';
+import { createVoidZero } from 'typescript';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -188,8 +189,13 @@ bot.on('text', async ctx => {
   if (step === 'registered') {
     return;
   }
-  const answer = ctx.message.text;
+
   const question = questions[step];
+
+  if (question.answers)
+    return ctx.reply('Пожалуйста, выберите ответ из списка');
+
+  const answer = ctx.message.text;
 
   const validationResult = await validateStep(step, answer);
 
@@ -226,25 +232,24 @@ bot.on('text', async ctx => {
   }
 
   if (nextStep === 'registered') {
-    await userService.setCard(user.id);
-    await userService.update(telegramId, { balance: 200 });
-    const updatedUser = await userService.getByTelegramId(telegramId);
-    if (!updatedUser) return;
-    const newUserData: CreateUserDto = {
-      name: updatedUser.firstName,
-      surName: updatedUser.secondName,
-      cardNumber: updatedUser.card.cardNumber,
-      cardTrack: updatedUser.card.cardTrack,
-      phone: updatedUser.phoneNumber,
-      birthday: formatDateToIiko(updatedUser.dateOfBirth),
-      sex: SEX.NOT_SPECIFIED,
-      consentStatus: ConsentStatus.GIVEN,
-    };
-    const iikoUserId = await iikoApi.createUser(newUserData);
-    await userService.update(telegramId, {
-      iikoId: iikoUserId,
-    });
-    console.log(iikoUserId);
+    const updatedUser = await setCardToUser(user.id);
+    if (!updatedUser)
+      return ctx.reply('Ошибка при выдаче карты. Обратитесь к администратору');
+    // const newUserData: CreateUserDto = {
+    //   name: updatedUser.firstName,
+    //   surName: updatedUser.secondName,
+    //   cardNumber: updatedUser.card.cardNumber,
+    //   cardTrack: updatedUser.card.cardTrack,
+    //   phone: updatedUser.phoneNumber,
+    //   birthday: formatDateToIiko(updatedUser.dateOfBirth),
+    //   sex: SEX.NOT_SPECIFIED,
+    //   consentStatus: ConsentStatus.GIVEN,
+    // };
+    // const iikoUserId = await iikoApi.createUser(newUserData);
+    // await userService.update(telegramId, {
+    //   iikoId: iikoUserId,
+    // });
+    // console.log(iikoUserId);
     await ctx.reply('✅ Скидочная карта создана');
 
     return ctx.reply(
@@ -255,7 +260,57 @@ bot.on('text', async ctx => {
     );
   }
 
-  return ctx.reply(questions[nextStep].label);
+  const nextQuestion = questions[nextStep];
+
+  if (nextQuestion.answers) {
+    const buttons = nextQuestion.answers.map(answer =>
+      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
+    );
+    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
+  }
+  return ctx.reply(nextQuestion.label);
+});
+
+bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return ctx.answerCbQuery('Произошла ошибка');
+
+  ctx.answerCbQuery();
+
+  const actionsString = ctx.match[0];
+  const [_, step, value] = actionsString.split('_');
+
+  if (!step || !value) return;
+  const question = questions[step];
+  if (!question) return;
+  const nextStep = question.nextStep;
+
+  const answerLabel =
+    question.answers?.find(answer => answer.value === value)?.label || '';
+  ctx.editMessageText(`Ваш город -  _${answerLabel}_`, {
+    parse_mode: 'Markdown',
+  });
+  try {
+    await userService.update(telegramId, {
+      [step]: value,
+      step: nextStep,
+    });
+  } catch (error) {
+    console.log(error);
+    return ctx.reply(
+      'Не удалось сохранить данные. Обратитесь к администратору'
+    );
+  }
+
+  const nextQuestion = questions[nextStep];
+
+  if (nextQuestion.answers) {
+    const buttons = nextQuestion.answers.map(answer =>
+      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
+    );
+    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
+  }
+  return ctx.reply(nextQuestion.label);
 });
 
 bot.on('photo', async ctx => {
@@ -387,6 +442,15 @@ async function validateStep(
         message: '',
       };
   }
+}
+
+async function setCardToUser(userId: number) {
+  try {
+    return await userService.setCard(userId);
+  } catch (error) {
+    console.log(`Ошибка выдачи карты пользователю ${userId}`);
+  }
+  return;
 }
 
 // FIXME: убрать any
