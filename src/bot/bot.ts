@@ -471,10 +471,6 @@ async function showBalance(ctx: any) {
     );
   }
 
-  await userService.update(telegramId, {
-    balance,
-  });
-
   await ctx.deleteMessage(messageId);
 
   return ctx.replyWithMarkdown(
