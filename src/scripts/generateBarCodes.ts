@@ -48,7 +48,6 @@ export function generateBarCode(card: CardData) {
     cardService.create({
       cardNumber: card.cardNumber,
       cardTrack: card.cardTrack,
-      city,
       barCodeLink: fullPath,
     });
   });
