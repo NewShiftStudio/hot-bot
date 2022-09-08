@@ -9,7 +9,6 @@ const cardsList = list as CardData[];
 
 export type CardData = {
   cardTrack: string;
-  city: string;
   cardNumber: string;
 };
 
@@ -41,14 +40,9 @@ export function generateBarCode(card: CardData) {
       encoding: 'base64',
     });
 
-    let city = card.city;
-    if (city !== 'MSK' && city !== 'SPB') {
-      city = 'SPB';
-    }
     cardService.create({
       cardNumber: card.cardNumber,
       cardTrack: card.cardTrack,
-      city,
       barCodeLink: fullPath,
     });
   });

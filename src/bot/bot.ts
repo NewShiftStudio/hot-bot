@@ -235,21 +235,21 @@ bot.on('text', async ctx => {
     const updatedUser = await setCardToUser(user.id);
     if (!updatedUser)
       return ctx.reply('Ошибка при выдаче карты. Обратитесь к администратору');
-    // const newUserData: CreateUserDto = {
-    //   name: updatedUser.firstName,
-    //   surName: updatedUser.secondName,
-    //   cardNumber: updatedUser.card.cardNumber,
-    //   cardTrack: updatedUser.card.cardTrack,
-    //   phone: updatedUser.phoneNumber,
-    //   birthday: formatDateToIiko(updatedUser.dateOfBirth),
-    //   sex: SEX.NOT_SPECIFIED,
-    //   consentStatus: ConsentStatus.GIVEN,
-    // };
-    // const iikoUserId = await iikoApi.createUser(newUserData);
-    // await userService.update(telegramId, {
-    //   iikoId: iikoUserId,
-    // });
-    // console.log(iikoUserId);
+    const newUserData: CreateUserDto = {
+      name: updatedUser.firstName,
+      surName: updatedUser.secondName,
+      cardNumber: updatedUser.card.cardNumber,
+      cardTrack: updatedUser.card.cardTrack,
+      phone: updatedUser.phoneNumber,
+      birthday: formatDateToIiko(updatedUser.dateOfBirth),
+      sex: SEX.NOT_SPECIFIED,
+      consentStatus: ConsentStatus.GIVEN,
+    };
+    const iikoUserId = await iikoApi.createUser(newUserData);
+    await userService.update(telegramId, {
+      iikoId: iikoUserId,
+    });
+    console.log(iikoUserId);
     await ctx.reply('✅ Скидочная карта создана');
 
     return ctx.reply(
@@ -470,10 +470,6 @@ async function showBalance(ctx: any) {
       'Произошла ошибка получения баланса. Обратитесь к администратору'
     );
   }
-
-  await userService.update(telegramId, {
-    balance,
-  });
 
   await ctx.deleteMessage(messageId);
 

@@ -9,6 +9,7 @@
     "start:prod": "NODE_ENV=production node ./dist/src/main.js",
     "generate:dev": "ts-node ./src/scripts/generateBarCodes",
     "generate": "node ./dist/src/scripts/generateBarCodes",
+    "updateOrderDates": "node ./dist/src/scripts/updateLastOrderDate",
     "birthNotification:dev": "ts-node ./src/scripts/birthNotification",
     "orderNotification:dev": "ts-node ./src/scripts/lastOrderNotification",
     "birthNotification": "node ./dist/src/scripts/birthNotification",
