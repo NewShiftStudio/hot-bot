@@ -31,8 +31,21 @@ class UserService {
     });
   }
 
-  async getAll(user: Partial<User>) {
+  async getAll(user?: Partial<User>) {
     return await this.userRepository.find({ where: user });
+  }
+
+  async getCityStats() {
+    const users = await this.getAll();
+    const total = users.length;
+    const spb = users.filter(user => user.city === 'SPB').length;
+    const msk = total - spb;
+
+    return {
+      total,
+      spb,
+      msk,
+    };
   }
 
   async getById(id: number) {

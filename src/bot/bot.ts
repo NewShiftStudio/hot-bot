@@ -9,8 +9,6 @@ import dotenv from 'dotenv';
 import { getDeclensionWordByCount } from '../helpers/wordHelper';
 import { postService } from '../common/services/post.service';
 import { User } from '../common/entities/User';
-import axios from 'axios';
-import { IikoUser } from '../@types/entities/IikoUser';
 import { iikoApi } from '../api/iikoApi';
 import {
   ConsentStatus,
@@ -18,7 +16,6 @@ import {
   SEX,
 } from '../@types/dto/user/create.dto';
 import { formatDateToIiko } from '../helpers/formatDate';
-import { createVoidZero } from 'typescript';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -91,10 +88,10 @@ bot.command('/registerAdmin', async ctx => {
 
   try {
     await userService.update(telegramId, {
-      canCratePosts: true,
+      isAdmin: true,
     });
     return ctx.reply(
-      'Отлично! Теперь вы можете создавать рассылки используя команду /createPost'
+      'Отлично! Теперь вы можете:\nСоздавать рассылки используя команду /createPost\nПолучать статистику по городам /cityStats'
     );
   } catch (error) {
     console.log(error);
@@ -102,11 +99,24 @@ bot.command('/registerAdmin', async ctx => {
   }
 });
 
+bot.command('/cityStats', async ctx => {
+  const telegramId = ctx.from.id;
+  const user = await userService.getByTelegramId(telegramId);
+
+  if (!user?.isAdmin) return;
+
+  const stats = await userService.getCityStats();
+
+  ctx.reply(
+    `Статистика:\n\nВсего пользователей: ${stats.total}\nМосква: ${stats.msk}\nСПб: ${stats.spb}`
+  );
+});
+
 bot.command('/createPost', async ctx => {
   const telegramId = ctx.from.id;
 
   const user = await userService.getByTelegramId(telegramId);
-  if (!user || !user.canCratePosts) return;
+  if (!user || !user.isAdmin) return;
 
   const postsList = await postService.getAll({
     creatorTelegramId: telegramId,
@@ -175,7 +185,7 @@ bot.on('text', async ctx => {
   const user = await userService.getByTelegramId(telegramId);
   if (!user) return;
 
-  if (user.canCratePosts) {
+  if (user.isAdmin) {
     const post = await postService.getOne({ creatorTelegramId: telegramId });
     if (post) {
       await postService.update(telegramId, {
@@ -498,25 +508,19 @@ async function spend(ctx: any) {
   });
 
   try {
-    const cardMessage = await ctx.replyWithPhoto(
+    await ctx.replyWithPhoto(
       [process.env.PUBLIC_URL, user.card.barCodeLink].join('/'),
       {
         caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
       }
     );
-
-    ctx.deleteMessage(messageId);
-
-    const cardMessageId = cardMessage.message_id;
-
-    setTimeout(() => {
-      ctx.deleteMessage(cardMessageId);
-    }, 5 * MINUTE);
   } catch (error) {
     console.log(error);
     ctx.deleteMessage(messageId);
     ctx.reply(
-      `Не удалось получить штрих-код карты.\n\nНомер вашей карт: ${user.card.cardNumber}`
+      `Не удалось получить штрих-код карты.\n\nНомер вашей карты: ${user.card.cardNumber}`
     );
+  } finally {
+    ctx.deleteMessage(messageId);
   }
 }
