@@ -15,7 +15,7 @@ export class IikoApi {
       const response = await axios.post(
         'https://api-ru.iiko.services/api/1/access_token',
         {
-          apiLogin: 'ae6300eb-be2',
+          apiLogin: this.apiLogin,
         }
       );
       const authData = response.data as AuthToken;

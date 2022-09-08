@@ -26,11 +26,11 @@ class CardService {
     });
   }
 
-  async getFreeCard(city: string) {
-    const cardsList = await this.getAll({ city });
+  async getFreeCard() {
+    const cardsList = await this.getAll();
     const freeCards = cardsList.filter(card => !card.user);
     if (freeCards.length === 0) {
-      console.log(`Свободные карты по городу ${city} кончились`);
+      console.log(`Свободные карты кончились`);
       throw new Error('Нет свободных карт');
     }
     return freeCards[0];

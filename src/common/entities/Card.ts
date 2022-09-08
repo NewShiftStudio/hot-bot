@@ -13,9 +13,6 @@ export class Card extends Base {
   @Column({ nullable: true })
   barCodeLink: string;
 
-  @Column({ default: 'SPB' })
-  city: string; //SPB || MSK
-
   @OneToOne(() => User, user => user.card, {
     onDelete: 'SET NULL',
     nullable: true,
