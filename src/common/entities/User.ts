@@ -38,7 +38,7 @@ export class User extends Base {
   lastOrderDate: Date;
 
   @Column({ default: false })
-  canCratePosts: boolean;
+  isAdmin: boolean;
 
   @OneToOne(() => Card, card => card.user, {
     onDelete: 'SET NULL',
