@@ -292,7 +292,7 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
   const [_, step, value] = actionsString.split('_');
 
   if (!step || !value) return;
-  const question = questions[step];
+  const question = registrationQuestions[step];
   if (!question) return;
   const nextStep = question.nextStep;
 
@@ -313,7 +313,7 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
     );
   }
 
-  const nextQuestion = questions[nextStep];
+  const nextQuestion = registrationQuestions[nextStep];
 
   if (nextQuestion.answers) {
     const buttons = nextQuestion.answers.map(answer =>
@@ -380,7 +380,7 @@ bot.action('register', async ctx => {
   if (!!checkUser) return;
 
   await userService.create({ telegramId, chatId, step: 'firstName' });
-  const firstQuestion = questions.firstName.label;
+  const firstQuestion = registrationQuestions.firstName.label;
   return ctx.reply(firstQuestion);
 });
 
