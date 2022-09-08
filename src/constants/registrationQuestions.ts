@@ -1,6 +1,6 @@
 import { Question } from '../@types/entities/Questions';
 
-export const questions: Record<string, Question> = {
+export const registrationQuestions: Record<string, Question> = {
   firstName: {
     label: 'Ваше имя',
     nextStep: 'secondName',

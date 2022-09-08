@@ -1,5 +1,5 @@
 import { Markup, Telegraf, Telegram } from 'telegraf';
-import { questions } from '../constants/questions';
+import { registrationQuestions } from '../constants/registrationQuestions';
 import { userService } from '../common/services/user.service';
 import { validateDateOfBirth } from '../helpers/dobValidator';
 import { validatePhoneNumber } from '../helpers/phoneValidation';
@@ -196,11 +196,12 @@ bot.on('text', async ctx => {
   }
 
   const step = user.step;
+
   if (step === 'registered') {
     return;
   }
 
-  const question = questions[step];
+  const question = registrationQuestions[step];
 
   if (question.answers)
     return ctx.reply('Пожалуйста, выберите ответ из списка');
@@ -270,7 +271,7 @@ bot.on('text', async ctx => {
     );
   }
 
-  const nextQuestion = questions[nextStep];
+  const nextQuestion = registrationQuestions[nextStep];
 
   if (nextQuestion.answers) {
     const buttons = nextQuestion.answers.map(answer =>
