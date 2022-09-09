@@ -1,11 +1,11 @@
-import { Entity, Column, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, OneToOne, ManyToOne } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 
 @Entity('interview')
 export class Interview extends Base {
   @Column({ nullable: true })
-  step: string; // init, 'step', closed
+  step: string; // created, sended, ...steps, closed, canceled
 
   @Column({ nullable: true })
   dish: number;
@@ -19,7 +19,7 @@ export class Interview extends Base {
   @Column({ nullable: true })
   purity: number;
 
-  @OneToOne(() => User, user => user.interview, {
+  @ManyToOne(() => User, user => user.interviews, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

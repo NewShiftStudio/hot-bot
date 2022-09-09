@@ -27,14 +27,14 @@ async function checkUserBalance(user: User) {
       `Update order date for ${user.firstName} ${user.secondName} - ${user.telegramId}`
     );
 
-    await interviewService.create(user.id);
-
+    const interview = await interviewService.create(user.id);
+    await userService.addInterview(user.id, interview);
     return await userService.update(user.telegramId, {
       balance: iikoBalance,
       lastOrderDate: new Date(),
     });
   } catch (error) {
-    console.log(`Error on user ${user.telegramId}`);
+    console.log(`Error on user ${user.telegramId}`, error);
     return;
   }
 }

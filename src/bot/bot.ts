@@ -18,6 +18,7 @@ import {
 import { formatDateToIiko } from '../helpers/formatDate';
 import { interviewService } from '../common/services/interview.service';
 import { interviewQuestions } from '../constants/interviewQuestions';
+import { Interview } from '../common/entities/Interview';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -199,8 +200,13 @@ bot.on('text', async ctx => {
     return saveUserRegisterAnswer(ctx, user, messageText);
   }
 
-  if (user.interview) {
-    return saveInterviewAnswer(ctx, user, messageText);
+  const interview = user.interviews.find(
+    interview =>
+      !['closed', 'init', 'canceled', 'sended'].includes(interview.step)
+  );
+
+  if (interview) {
+    return saveInterviewAnswer(ctx, interview, messageText);
   }
 
   return;
@@ -270,7 +276,13 @@ bot.action('startInterview', async ctx => {
   const user = await userService.getByTelegramId(telegramId);
   if (!user) return;
 
-  await interviewService.update(user.interview.id, {
+  const interview = user.interviews.find(
+    interview =>
+      !['closed', 'init', 'canceled', 'sended'].includes(interview.step)
+  );
+  if (!interview) return;
+
+  await interviewService.update(interview.id, {
     step: 'dish',
   });
 
@@ -417,15 +429,18 @@ async function savePostText(ctx: Context, telegramId: number, text: string) {
   }
 }
 
-async function saveInterviewAnswer(ctx: Context, user: User, answer: string) {
-  const step = user.interview.step;
+async function saveInterviewAnswer(
+  ctx: Context,
+  interview: Interview,
+  answer: string
+) {
+  const step = interview.step;
   const nextInterviewStep = interviewQuestions[step].nextStep;
-  await interviewService.update(user.interview.id, {
+  await interviewService.update(interview.id, {
     [step]: answer,
     step: nextInterviewStep,
   });
   if (nextInterviewStep === 'closed') {
-    await userService.update(user.telegramId, { interview: undefined });
     return ctx.reply('Спасибо за отзыв! Мы учтем вашу оценку!');
   }
   return ctx.reply(interviewQuestions[nextInterviewStep].label);
