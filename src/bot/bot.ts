@@ -1,5 +1,5 @@
-import { Markup, Telegraf, Telegram } from 'telegraf';
-import { questions } from '../constants/questions';
+import { Context, Markup, Telegraf, Telegram } from 'telegraf';
+import { registrationQuestions } from '../constants/registrationQuestions';
 import { userService } from '../common/services/user.service';
 import { validateDateOfBirth } from '../helpers/dobValidator';
 import { validatePhoneNumber } from '../helpers/phoneValidation';
@@ -16,6 +16,8 @@ import {
   SEX,
 } from '../@types/dto/user/create.dto';
 import { formatDateToIiko } from '../helpers/formatDate';
+import { interviewService } from '../common/services/interview.service';
+import { interviewQuestions } from '../constants/interviewQuestions';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -38,8 +40,8 @@ const MINUTE = 60 * 1000;
 bot.hears(SHOW_BALANCE_TEXT, showBalance);
 bot.command('balance', showBalance);
 
-bot.hears(SPEND_TEXT, spend);
-bot.command('spend', spend);
+bot.hears(SPEND_TEXT, sendBarCode);
+bot.command('spend', sendBarCode);
 
 bot.start(async ctx => {
   const telegramId = ctx.message.from.id;
@@ -185,100 +187,36 @@ bot.on('text', async ctx => {
   const user = await userService.getByTelegramId(telegramId);
   if (!user) return;
 
+  const messageText = ctx.message.text;
+
   if (user.isAdmin) {
-    const post = await postService.getOne({ creatorTelegramId: telegramId });
-    if (post) {
-      await postService.update(telegramId, {
-        text: ctx.message.text,
-      });
-      return ctx.reply('Текст поста обновлен');
-    }
+    savePostText(ctx, telegramId, messageText);
   }
 
   const step = user.step;
-  if (step === 'registered') {
-    return;
+
+  if (step !== 'registered') {
+    return saveUserRegisterAnswer(ctx, user, messageText);
   }
 
-  const question = questions[step];
-
-  if (question.answers)
-    return ctx.reply('Пожалуйста, выберите ответ из списка');
-
-  const answer = ctx.message.text;
-
-  const validationResult = await validateStep(step, answer);
-
-  if (validationResult.status !== 'success') {
-    return ctx.reply(validationResult.message);
+  if (user.interview) {
+    return saveInterviewAnswer(ctx, user, messageText);
   }
 
-  if (!question) {
-    console.error(
-      `У пользователя ${telegramId} произошла ошибка на этапе ${step}`
-    );
-    return ctx.reply('Возникла ошибка. Обратитесь к администратору');
-  }
+  return;
+});
 
-  const nextStep = question.nextStep;
+bot.on('photo', async ctx => {
+  const telegramId = ctx.from.id;
+  const post = await postService.getOne({ creatorTelegramId: telegramId });
+  if (!post) return;
 
-  if (!nextStep) {
-    console.error(
-      `У пользователя ${telegramId} произошла ошибка. Отсутствует этап после ${step}`
-    );
-    return ctx.reply('Возникла ошибка. Обратитесь к администратору');
-  }
-
-  try {
-    await userService.update(telegramId, {
-      [step]: answer,
-      step: nextStep,
-    });
-  } catch (error) {
-    console.log(error);
-    return ctx.reply(
-      'Не удалось сохранить данные. Обратитесь к администратору'
-    );
-  }
-
-  if (nextStep === 'registered') {
-    const updatedUser = await setCardToUser(user.id);
-    if (!updatedUser)
-      return ctx.reply('Ошибка при выдаче карты. Обратитесь к администратору');
-    const newUserData: CreateUserDto = {
-      name: updatedUser.firstName,
-      surName: updatedUser.secondName,
-      cardNumber: updatedUser.card.cardNumber,
-      cardTrack: updatedUser.card.cardTrack,
-      phone: updatedUser.phoneNumber,
-      birthday: formatDateToIiko(updatedUser.dateOfBirth),
-      sex: SEX.NOT_SPECIFIED,
-      consentStatus: ConsentStatus.GIVEN,
-    };
-    const iikoUserId = await iikoApi.createUser(newUserData);
-    await userService.update(telegramId, {
-      iikoId: iikoUserId,
-    });
-    console.log(iikoUserId);
-    await ctx.reply('✅ Скидочная карта создана');
-
-    return ctx.reply(
-      END_REGISTRATION_TEXT,
-      Markup.keyboard([[SHOW_BALANCE_TEXT, SPEND_TEXT]])
-        .oneTime()
-        .resize()
-    );
-  }
-
-  const nextQuestion = questions[nextStep];
-
-  if (nextQuestion.answers) {
-    const buttons = nextQuestion.answers.map(answer =>
-      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
-    );
-    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
-  }
-  return ctx.reply(nextQuestion.label);
+  const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
+  const newFilesList = post.fileIds + ' ' + fileId;
+  await postService.update(telegramId, {
+    fileIds: newFilesList,
+  });
+  return ctx.reply('Фото добавлено!');
 });
 
 bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
@@ -291,7 +229,7 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
   const [_, step, value] = actionsString.split('_');
 
   if (!step || !value) return;
-  const question = questions[step];
+  const question = registrationQuestions[step];
   if (!question) return;
   const nextStep = question.nextStep;
 
@@ -312,7 +250,7 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
     );
   }
 
-  const nextQuestion = questions[nextStep];
+  const nextQuestion = registrationQuestions[nextStep];
 
   if (nextQuestion.answers) {
     const buttons = nextQuestion.answers.map(answer =>
@@ -323,17 +261,23 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
   return ctx.reply(nextQuestion.label);
 });
 
-bot.on('photo', async ctx => {
-  const telegramId = ctx.from.id;
-  const post = await postService.getOne({ creatorTelegramId: telegramId });
-  if (!post) return;
+bot.action('startInterview', async ctx => {
+  ctx.answerCbQuery();
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+  ctx.deleteMessage();
 
-  const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-  const newFilesList = post.fileIds + ' ' + fileId;
-  await postService.update(telegramId, {
-    fileIds: newFilesList,
+  const user = await userService.getByTelegramId(telegramId);
+  if (!user) return;
+
+  await interviewService.update(user.interview.id, {
+    step: 'dish',
   });
-  return ctx.reply('Фото добавлено!');
+
+  ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
+  console.log(interviewQuestions.dish.label);
+
+  ctx.reply(interviewQuestions.dish.label);
 });
 
 bot.action('send', async ctx => {
@@ -379,7 +323,7 @@ bot.action('register', async ctx => {
   if (!!checkUser) return;
 
   await userService.create({ telegramId, chatId, step: 'firstName' });
-  const firstQuestion = questions.firstName.label;
+  const firstQuestion = registrationQuestions.firstName.label;
   return ctx.reply(firstQuestion);
 });
 
@@ -463,9 +407,136 @@ async function setCardToUser(userId: number) {
   return;
 }
 
-// FIXME: убрать any
-async function showBalance(ctx: any) {
-  const telegramId = ctx.message.from.id;
+async function savePostText(ctx: Context, telegramId: number, text: string) {
+  const post = await postService.getOne({ creatorTelegramId: telegramId });
+  if (post) {
+    await postService.update(telegramId, {
+      text,
+    });
+    ctx.reply('Текст поста обновлен');
+  }
+}
+
+async function saveInterviewAnswer(ctx: Context, user: User, answer: string) {
+  const step = user.interview.step;
+  const nextInterviewStep = interviewQuestions[step].nextStep;
+  await interviewService.update(user.interview.id, {
+    [step]: answer,
+    step: nextInterviewStep,
+  });
+  if (nextInterviewStep === 'closed') {
+    await userService.update(user.telegramId, { interview: undefined });
+    return ctx.reply('Спасибо за отзыв! Мы учтем вашу оценку!');
+  }
+  return ctx.reply(interviewQuestions[nextInterviewStep].label);
+}
+
+async function saveUserRegisterAnswer(
+  ctx: Context,
+  user: User,
+  answer: string
+) {
+  const step = user.step;
+  const telegramId = user.telegramId;
+  const question = registrationQuestions[step];
+
+  if (question.answers) return 'Пожалуйста, выберите ответ из списка';
+
+  const validationResult = await validateStep(step, answer);
+
+  if (validationResult.status !== 'success') {
+    return validationResult.message;
+  }
+
+  if (!question) {
+    console.error(
+      `У пользователя ${telegramId} произошла ошибка на этапе ${step}`
+    );
+    return 'Возникла ошибка. Обратитесь к администратору';
+  }
+
+  const nextStep = question.nextStep;
+
+  if (!nextStep) {
+    console.error(
+      `У пользователя ${telegramId} произошла ошибка. Отсутствует этап после ${step}`
+    );
+    return 'Возникла ошибка. Обратитесь к администратору';
+  }
+
+  try {
+    await userService.update(telegramId, {
+      [step]: answer,
+      step: nextStep,
+    });
+  } catch (error) {
+    console.log(error);
+    return 'Не удалось сохранить данные. Обратитесь к администратору';
+  }
+
+  if (nextStep === 'registered') {
+    return registerUserInIIko(ctx, user);
+  }
+
+  const nextQuestion = registrationQuestions[nextStep];
+
+  if (nextQuestion.answers) {
+    const buttons = nextQuestion.answers.map(answer =>
+      Markup.button.callback(answer.label, `answer_${nextStep}_${answer.value}`)
+    );
+    return ctx.reply(nextQuestion.label, Markup.inlineKeyboard(buttons));
+  }
+  return ctx.reply(nextQuestion.label);
+}
+
+async function registerUserInIIko(ctx: Context, user: User) {
+  const loadingMessage = await ctx.reply(
+    'Регистрируем в бонусной программе...'
+  );
+  try {
+    const updatedUser = await setCardToUser(user.id);
+    if (!updatedUser)
+      return 'Ошибка при выдаче карты. Обратитесь к администратору';
+    const newUserData: CreateUserDto = {
+      name: updatedUser.firstName,
+      surName: updatedUser.secondName,
+      cardNumber: updatedUser.card.cardNumber,
+      cardTrack: updatedUser.card.cardTrack,
+      phone: updatedUser.phoneNumber,
+      birthday: formatDateToIiko(updatedUser.dateOfBirth),
+      sex: SEX.NOT_SPECIFIED,
+      consentStatus: ConsentStatus.GIVEN,
+    };
+    const iikoUserId = await iikoApi.createUser(newUserData);
+    await userService.update(updatedUser.telegramId, {
+      iikoId: iikoUserId,
+    });
+    console.log(iikoUserId);
+
+    const iikoBalance = await iikoApi.getUserBalance(user.iikoId);
+    await userService.update(user.telegramId, {
+      balance: iikoBalance,
+    });
+    ctx.deleteMessage(loadingMessage.message_id);
+    return ctx.reply(
+      END_REGISTRATION_TEXT,
+      Markup.keyboard([[SHOW_BALANCE_TEXT, SPEND_TEXT]])
+        .oneTime()
+        .resize()
+    );
+  } catch (error) {
+    console.log(`Ошибка при регистрации пользователя: ${user.telegramId}`);
+    ctx.deleteMessage(loadingMessage.message_id);
+    return ctx.reply(
+      'Возникла ошибка при регистрации в бонусную программу, обратитесь к администратору'
+    );
+  }
+}
+
+async function showBalance(ctx: Context) {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+
   const user = await userService.getByTelegramId(telegramId);
   if (!user || user.step !== 'registered')
     return ctx.reply(
@@ -491,9 +562,10 @@ async function showBalance(ctx: any) {
   );
 }
 
-// FIXME: убрать any
-async function spend(ctx: any) {
-  const telegramId = ctx.message.from.id;
+async function sendBarCode(ctx: Context) {
+  const telegramId = ctx.from?.id;
+
+  if (!telegramId) return;
 
   const messageId = (await ctx.reply('Загрузка...')).message_id;
 
@@ -521,6 +593,6 @@ async function spend(ctx: any) {
       `Не удалось получить штрих-код карты.\n\nНомер вашей карты: ${user.card.cardNumber}`
     );
   } finally {
-    ctx.deleteMessage(messageId);
+    return ctx.deleteMessage(messageId);
   }
 }
