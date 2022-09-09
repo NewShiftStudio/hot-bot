@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/User';
 import { AppDataSource } from '../../database/appDataSourse';
 import { cardService } from './card.service';
+import { interviewService } from './interview.service';
 
 class UserService {
   userRepository: Repository<User>;
@@ -19,7 +20,7 @@ class UserService {
       where: {
         telegramId,
       },
-      relations: ['card'],
+      relations: ['card', 'interview'],
     });
   }
 
@@ -33,6 +34,16 @@ class UserService {
 
   async getAll(user?: Partial<User>) {
     return await this.userRepository.find({ where: user });
+  }
+
+  async getAllWithInterview() {
+    return await this.userRepository.find({
+      where: {
+        interview: {
+          step: 'init',
+        },
+      },
+    });
   }
 
   async getCityStats() {
