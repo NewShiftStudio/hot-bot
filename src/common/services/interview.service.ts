@@ -34,12 +34,10 @@ class InterviewService {
     }
 
     const interview = this.interviewRepository.create({
-      step: 'init',
+      step: 'created',
       user,
     });
-    await this.interviewRepository.save(interview);
-    userService.update(user.telegramId, { interview });
-    return interview;
+    return await this.interviewRepository.save(interview);
   }
 
   async update(id: number, interview: Partial<Interview>) {
