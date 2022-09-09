@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Interview } from './Interview';
 import { Base } from './Base';
 import { Card } from './Card';
@@ -48,10 +48,10 @@ export class User extends Base {
   @JoinColumn()
   card: Card;
 
-  @OneToOne(() => Interview, interview => interview.user, {
+  @OneToMany(() => Interview, interview => interview.user, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn()
-  interview: Interview;
+  interviews: Interview[];
 }
