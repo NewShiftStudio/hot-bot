@@ -3,6 +3,7 @@ import { User } from '../entities/User';
 import { AppDataSource } from '../../database/appDataSourse';
 import { cardService } from './card.service';
 import { interviewService } from './interview.service';
+import { Interview } from '../entities/Interview';
 
 class UserService {
   userRepository: Repository<User>;
@@ -20,7 +21,7 @@ class UserService {
       where: {
         telegramId,
       },
-      relations: ['card', 'interview'],
+      relations: ['card', 'interviews'],
     });
   }
 
@@ -39,10 +40,11 @@ class UserService {
   async getAllWithInterview() {
     return await this.userRepository.find({
       where: {
-        interview: {
-          step: 'init',
+        interviews: {
+          step: 'created',
         },
       },
+      relations: ['interviews'],
     });
   }
 
@@ -60,7 +62,10 @@ class UserService {
   }
 
   async getById(id: number) {
-    return await this.userRepository.findOne({ where: { id } });
+    return await this.userRepository.findOne({
+      where: { id },
+      relations: ['interviews'],
+    });
   }
 
   async setCard(id: number) {
@@ -73,6 +78,16 @@ class UserService {
     user.card = card;
     await cardService.update(card.id, { user });
     return await this.userRepository.save(user);
+  }
+
+  async addInterview(userId: number, interview: Interview) {
+    const user = await this.getById(userId);
+    if (!user) return;
+
+    const userInterviews = user.interviews || [];
+    userInterviews.push(interview);
+    user.interviews = userInterviews;
+    this.userRepository.save(user);
   }
 
   async update(telegramId: number, user: Partial<User>) {
