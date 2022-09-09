@@ -53,5 +53,5 @@ export class User extends Base {
     nullable: true,
   })
   @JoinColumn()
-  answer: Interview;
+  interview: Interview;
 }

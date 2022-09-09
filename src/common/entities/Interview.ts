@@ -5,7 +5,7 @@ import { User } from './User';
 @Entity('interview')
 export class Interview extends Base {
   @Column({ nullable: true })
-  step: string;
+  step: string; // init, 'step', closed
 
   @Column({ nullable: true })
   dish: number;
@@ -19,7 +19,7 @@ export class Interview extends Base {
   @Column({ nullable: true })
   purity: number;
 
-  @OneToOne(() => User, user => user.card, {
+  @OneToOne(() => User, user => user.interview, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
