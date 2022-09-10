@@ -4,6 +4,7 @@ import { AppDataSource } from '../../database/appDataSourse';
 import { cardService } from './card.service';
 import { interviewService } from './interview.service';
 import { Interview } from '../entities/Interview';
+import { CityStats } from '../entities/CityStats';
 
 class UserService {
   userRepository: Repository<User>;
@@ -51,16 +52,16 @@ class UserService {
     });
   }
 
-  async getCityStats() {
-    const users = await this.getAll();
-    const total = users.length;
-    const spb = users.filter(user => user.city === 'SPB').length;
-    const msk = total - spb;
+  async getCityStats(): Promise<CityStats> {
+    const spdUser = await this.getAll({ city: 'SPB' });
+    const moscowUser = await this.getAll({ city: 'MSK' });
+
+    const total = spdUser.length + moscowUser.length;
 
     return {
       total,
-      spb,
-      msk,
+      spb: spdUser.length,
+      msk: moscowUser.length,
     };
   }
 

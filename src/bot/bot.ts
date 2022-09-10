@@ -125,7 +125,7 @@ bot.command('/cityStats', async ctx => {
   const stats = await userService.getCityStats();
 
   ctx.reply(
-    `Статистика:\n\nВсего пользователей: ${stats.total}\nМосква: ${stats.msk}\nСПб: ${stats.spb}`
+    `Всего пользователей в программе лояльности — ${stats.total}\nПользователей из Москвы — ${stats.msk}\nПользователей из Санкт-Петербурга — ${stats.spb}`
   );
 });
 
