@@ -19,6 +19,7 @@ import { formatDateToIiko } from '../helpers/formatDate';
 import { interviewService } from '../common/services/interview.service';
 import { interviewQuestions } from '../constants/interviewQuestions';
 import { Interview } from '../common/entities/Interview';
+import { validateNumber } from '../helpers/validateNumber';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -445,6 +446,14 @@ async function saveInterviewAnswer(
 ) {
   const step = interview.step;
   const nextInterviewStep = interviewQuestions[step].nextStep;
+  const numberAnswer = +answer;
+
+  const validationResult = validateNumber(numberAnswer);
+
+  if (validationResult.status === 'error') {
+    return ctx.reply(validationResult.message);
+  }
+
   await interviewService.update(interview.id, {
     [step]: answer,
     step: nextInterviewStep,
