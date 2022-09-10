@@ -267,19 +267,15 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
   return ctx.reply(nextQuestion.label);
 });
 
-bot.action('startInterview', async ctx => {
+bot.action(/startInterview_[0-9]*/, async ctx => {
   ctx.answerCbQuery();
-  const telegramId = ctx.from?.id;
-  if (!telegramId) return;
   ctx.deleteMessage();
 
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user) return;
+  const actionsString = ctx.match[0];
+  const [_, interviewId] = actionsString.split('_');
 
-  const interview = user.interviews.find(
-    interview =>
-      !['closed', 'init', 'canceled', 'sended'].includes(interview.step)
-  );
+  const interview = await interviewService.getOne(+interviewId);
+
   if (!interview) return;
 
   await interviewService.update(interview.id, {
