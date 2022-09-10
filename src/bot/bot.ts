@@ -523,12 +523,17 @@ async function registerUserInIIko(ctx: Context, user: User) {
       consentStatus: ConsentStatus.GIVEN,
     };
     const iikoUserId = await iikoApi.createUser(newUserData);
+    if (!iikoUserId) {
+      throw new Error(
+        `Ошибка регистрации в iiko пользователя ${user.telegramId}`
+      );
+    }
     await userService.update(updatedUser.telegramId, {
       iikoId: iikoUserId,
     });
-    console.log(iikoUserId);
 
-    const iikoBalance = await iikoApi.getUserBalance(user.iikoId);
+    const iikoBalance = await iikoApi.getUserBalance(iikoUserId);
+
     await userService.update(user.telegramId, {
       balance: iikoBalance,
     });
