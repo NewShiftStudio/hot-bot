@@ -22,21 +22,33 @@ async function checkUserBalance(user: User) {
   try {
     const iikoBalance = await iikoApi.getUserBalance(user.iikoId);
     if (currentBalance === iikoBalance) return;
-
-    console.log(
-      `Update order date for ${user.firstName} ${user.secondName} - ${user.telegramId}`
-    );
-
-    const interview = await interviewService.create(user.id);
-    await userService.addInterview(user.id, interview);
-    return await userService.update(user.telegramId, {
-      balance: iikoBalance,
-      lastOrderDate: new Date(),
-    });
+    await changeUserBalance(user, iikoBalance!);
   } catch (error) {
     console.log(`Error on user ${user.telegramId}`, error);
     return;
   }
+}
+
+async function changeUserBalance(user: User, newBalance: number) {
+  console.log(
+    `Update order date for ${user.firstName} ${user.secondName} - ${user.telegramId}`
+  );
+
+  const userInterviews =
+    user.interviews?.filter(
+      interview => !['closed', 'canceled'].includes(interview.step)
+    ) || [];
+
+  for (const interview of userInterviews) {
+    await interviewService.delete(interview.id);
+  }
+
+  const interview = await interviewService.create(user.id);
+  await userService.addInterview(user.id, interview);
+  return await userService.update(user.telegramId, {
+    balance: newBalance,
+    lastOrderDate: new Date(),
+  });
 }
 
 async function bootstrap() {

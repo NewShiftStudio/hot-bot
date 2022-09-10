@@ -34,7 +34,10 @@ class UserService {
   }
 
   async getAll(user?: Partial<User>) {
-    return await this.userRepository.find({ where: user });
+    return await this.userRepository.find({
+      where: user,
+      relations: ['card', 'interviews'],
+    });
   }
 
   async getAllWithInterview() {

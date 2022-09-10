@@ -276,16 +276,13 @@ bot.action(/startInterview_[0-9]*/, async ctx => {
 
   const interview = await interviewService.getOne(+interviewId);
 
-  if (!interview) return;
+  if (!interview) return ctx.reply('Простите, срок ответа истек');
 
   await interviewService.update(interview.id, {
     step: 'dish',
   });
-
-  ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
-  console.log(interviewQuestions.dish.label);
-
-  ctx.reply(interviewQuestions.dish.label);
+  await ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
+  return ctx.reply(interviewQuestions.dish.label);
 });
 
 bot.action('send', async ctx => {
