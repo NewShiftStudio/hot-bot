@@ -1,14 +1,8 @@
-import { differenceInDays } from 'date-fns';
 import { Markup, Telegram } from 'telegraf';
-import { iikoApi } from '../api/iikoApi';
-import { User } from '../common/entities/User';
+import { Interview } from '../common/entities/Interview';
+import { interviewService } from '../common/services/interview.service';
 import { userService } from '../common/services/user.service';
 import { AppDataSource } from '../database/appDataSourse';
-
-type Congratulation = {
-  user: User;
-  text: string;
-};
 
 const token = process.env.USER_BOT_TOKEN;
 if (!token) {
@@ -21,15 +15,24 @@ async function mailingUsers() {
   const users = await userService.getAllWithInterview();
 
   for (const user of users) {
-    await setInterviewRequest(user);
+    const interview = user.interviews.find(
+      interview => interview.step === 'created'
+    );
+    if (interview) {
+      await setInterviewRequest(user.chatId, interview);
+    }
   }
 }
 
-async function setInterviewRequest(user: User) {
+async function setInterviewRequest(chatId: number, interview: Interview) {
   const button = Markup.inlineKeyboard([
-    Markup.button.callback('Начать!', 'startInterview'),
+    Markup.button.callback('Давайте!', `startInterview_${interview.id}`),
+    Markup.button.callback('Не хочу', `cancelInterview_${interview.id}`),
   ]);
-  await telegram.sendMessage(user.chatId, 'Привет, давай на интервью!', button);
+  await interviewService.update(interview.id, {
+    step: 'sended',
+  });
+  await telegram.sendMessage(chatId, 'Привет, давай на интервью!', button);
 }
 
 async function bootstrap() {

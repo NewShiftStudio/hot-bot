@@ -267,29 +267,38 @@ bot.action(/answer_[A-Za-z0-9]*_\w*/, async ctx => {
   return ctx.reply(nextQuestion.label);
 });
 
-bot.action('startInterview', async ctx => {
+bot.action(/startInterview_[0-9]*/, async ctx => {
   ctx.answerCbQuery();
-  const telegramId = ctx.from?.id;
-  if (!telegramId) return;
   ctx.deleteMessage();
 
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user) return;
+  const actionsString = ctx.match[0];
+  const [_, interviewId] = actionsString.split('_');
 
-  const interview = user.interviews.find(
-    interview =>
-      !['closed', 'init', 'canceled', 'sended'].includes(interview.step)
-  );
-  if (!interview) return;
+  const interview = await interviewService.getOne(+interviewId);
+
+  if (!interview) return ctx.reply('Простите, срок ответа истек');
 
   await interviewService.update(interview.id, {
     step: 'dish',
   });
+  await ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
+  return ctx.reply(interviewQuestions.dish.label);
+});
+bot.action(/cancelInterview_[0-9]*/, async ctx => {
+  ctx.answerCbQuery();
+  ctx.deleteMessage();
 
-  ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
-  console.log(interviewQuestions.dish.label);
+  const actionsString = ctx.match[0];
+  const [_, interviewId] = actionsString.split('_');
 
-  ctx.reply(interviewQuestions.dish.label);
+  const interview = await interviewService.getOne(+interviewId);
+
+  if (!interview) return ctx.reply('Простите, срок ответа истек');
+
+  await interviewService.update(interview.id, {
+    step: 'canceled',
+  });
+  return await ctx.reply('Вы отказались от прохождения опроса(');
 });
 
 bot.action('send', async ctx => {
@@ -523,12 +532,17 @@ async function registerUserInIIko(ctx: Context, user: User) {
       consentStatus: ConsentStatus.GIVEN,
     };
     const iikoUserId = await iikoApi.createUser(newUserData);
+    if (!iikoUserId) {
+      throw new Error(
+        `Ошибка регистрации в iiko пользователя ${user.telegramId}`
+      );
+    }
     await userService.update(updatedUser.telegramId, {
       iikoId: iikoUserId,
     });
-    console.log(iikoUserId);
 
-    const iikoBalance = await iikoApi.getUserBalance(user.iikoId);
+    const iikoBalance = await iikoApi.getUserBalance(iikoUserId);
+
     await userService.update(user.telegramId, {
       balance: iikoBalance,
     });
