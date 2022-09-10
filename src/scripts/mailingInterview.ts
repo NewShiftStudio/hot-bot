@@ -26,7 +26,8 @@ async function mailingUsers() {
 
 async function setInterviewRequest(chatId: number, interview: Interview) {
   const button = Markup.inlineKeyboard([
-    Markup.button.callback('Начать!', `startInterview_${interview.id}`),
+    Markup.button.callback('Давайте!', `startInterview_${interview.id}`),
+    Markup.button.callback('Не хочу', `cancelInterview_${interview.id}`),
   ]);
   await interviewService.update(interview.id, {
     step: 'sended',

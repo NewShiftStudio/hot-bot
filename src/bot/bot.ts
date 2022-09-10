@@ -284,6 +284,22 @@ bot.action(/startInterview_[0-9]*/, async ctx => {
   await ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
   return ctx.reply(interviewQuestions.dish.label);
 });
+bot.action(/cancelInterview_[0-9]*/, async ctx => {
+  ctx.answerCbQuery();
+  ctx.deleteMessage();
+
+  const actionsString = ctx.match[0];
+  const [_, interviewId] = actionsString.split('_');
+
+  const interview = await interviewService.getOne(+interviewId);
+
+  if (!interview) return ctx.reply('Простите, срок ответа истек');
+
+  await interviewService.update(interview.id, {
+    step: 'canceled',
+  });
+  return await ctx.reply('Вы отказались от прохождения опроса(');
+});
 
 bot.action('send', async ctx => {
   ctx.answerCbQuery();
