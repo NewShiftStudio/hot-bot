@@ -4,8 +4,6 @@ import { userService } from '../common/services/user.service';
 import { validateDateOfBirth } from '../helpers/dobValidator';
 import { validatePhoneNumber } from '../helpers/phoneValidation';
 import { ValidationResult } from '../@types/entities/ValidationResult';
-
-import dotenv from 'dotenv';
 import { getDeclensionWordByCount } from '../helpers/wordHelper';
 import { postService } from '../common/services/post.service';
 import { User } from '../common/entities/User';
@@ -20,6 +18,9 @@ import { interviewService } from '../common/services/interview.service';
 import { interviewQuestions } from '../constants/interviewQuestions';
 import { Interview } from '../common/entities/Interview';
 import { validateNumber } from '../helpers/validateNumber';
+import { generateXls } from '../scripts/createInterviewsXls';
+
+import dotenv from 'dotenv';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -37,7 +38,6 @@ const END_REGISTRATION_TEXT =
   'Спасибо, что присоединились к сообществу настоящих гедонистов! Дарим вам 200 приветственных бонусов. Оплачивайте ими 50% от вашего чека! 🔥\n\nКстати, забыли сказать, при бронировании столика по промокоду «eat in est»  вы получаете сет из наших невероятных тапасов! Забронировать можно по номерам телефонов тут 👇🏼\n\nEst1993.ru';
 const SHOW_BALANCE_TEXT = '💰 Показать баланс';
 const SPEND_TEXT = '💳 Использовать баллы';
-const MINUTE = 60 * 1000;
 
 bot.hears(SHOW_BALANCE_TEXT, showBalance);
 bot.command('balance', showBalance);
@@ -68,6 +68,19 @@ bot.start(async ctx => {
       .oneTime()
       .resize()
   );
+});
+
+bot.command('createXls', async ctx => {
+  const telegramId = ctx.from.id;
+  const user = await userService.getByTelegramId(telegramId);
+  if (!user || !user.isAdmin) return;
+  const loader = await ctx.reply('Генерируем файл...');
+  const result = await generateXls('interviews');
+  ctx.deleteMessage(loader.message_id);
+  if (result.status === 'error') {
+    ctx.reply(result.message);
+  }
+  ctx.replyWithDocument([process.env.PUBLIC_URL, 'interviews.zip'].join('/'));
 });
 
 bot.command('delete', async ctx => {
@@ -285,6 +298,7 @@ bot.action(/startInterview_[0-9]*/, async ctx => {
   await ctx.reply('Да начнется интервью! Ответы от 1 до 10!!');
   return ctx.reply(interviewQuestions.dish.label);
 });
+
 bot.action(/cancelInterview_[0-9]*/, async ctx => {
   ctx.answerCbQuery();
   ctx.deleteMessage();
