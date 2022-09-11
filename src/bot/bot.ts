@@ -21,6 +21,7 @@ import { validateNumber } from '../helpers/validateNumber';
 import { generateXls } from '../scripts/createInterviewsXls';
 
 import dotenv from 'dotenv';
+import { adminButtons } from '../constants/buttons';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -39,11 +40,20 @@ const END_REGISTRATION_TEXT =
 const SHOW_BALANCE_TEXT = '💰 Показать баланс';
 const SPEND_TEXT = '💳 Использовать баллы';
 
-bot.hears(SHOW_BALANCE_TEXT, showBalance);
 bot.command('balance', showBalance);
+bot.hears(SHOW_BALANCE_TEXT, showBalance);
 
-bot.hears(SPEND_TEXT, sendBarCode);
 bot.command('spend', sendBarCode);
+bot.hears(SPEND_TEXT, sendBarCode);
+
+bot.command('/cityStats', getCityStats);
+bot.hears('📊 Статистика', getCityStats);
+
+bot.command('/createXls', getXlsFile);
+bot.hears('📋 Результаты опроса', getXlsFile);
+
+bot.command('/createPost', createPost);
+bot.hears('📝 Создать пост', createPost);
 
 bot.start(async ctx => {
   const telegramId = ctx.message.from.id;
@@ -68,19 +78,6 @@ bot.start(async ctx => {
       .oneTime()
       .resize()
   );
-});
-
-bot.command('createXls', async ctx => {
-  const telegramId = ctx.from.id;
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user || !user.isAdmin) return;
-  const loader = await ctx.reply('Генерируем файл...');
-  const result = await generateXls('interviews');
-  ctx.deleteMessage(loader.message_id);
-  if (result.status === 'error') {
-    ctx.reply(result.message);
-  }
-  ctx.replyWithDocument([process.env.PUBLIC_URL, 'interviews.zip'].join('/'));
 });
 
 bot.command('delete', async ctx => {
@@ -108,57 +105,20 @@ bot.command('/registerAdmin', async ctx => {
       isAdmin: true,
     });
     return ctx.reply(
-      'Отлично! Теперь вы можете:\nСоздавать рассылки используя команду /createPost\nПолучать статистику по городам /cityStats'
+      'Отлично! Теперь вы можете:\nСоздавать рассылки используя команду /createPost\nПолучать статистику по городам /cityStats',
+      adminButtons
     );
   } catch (error) {
     console.log(error);
-    return ctx.reply('Произошла ошибка прои назначении роли');
+    return ctx.reply('Произошла ошибка при назначении роли');
   }
-});
-
-bot.command('/cityStats', async ctx => {
-  const telegramId = ctx.from.id;
-  const user = await userService.getByTelegramId(telegramId);
-
-  if (!user?.isAdmin) return;
-
-  const stats = await userService.getCityStats();
-
-  ctx.reply(
-    `Всего пользователей в программе лояльности — ${stats.total}\nПользователей из Москвы — ${stats.msk}\nПользователей из Санкт-Петербурга — ${stats.spb}`
-  );
-});
-
-bot.command('/createPost', async ctx => {
-  const telegramId = ctx.from.id;
-
-  const user = await userService.getByTelegramId(telegramId);
-  if (!user || !user.isAdmin) return;
-
-  const postsList = await postService.getAll({
-    creatorTelegramId: telegramId,
-  });
-
-  await Promise.all(
-    postsList.map(async post => await postService.delete(post.id))
-  );
-
-  await postService.create({
-    creatorTelegramId: telegramId,
-    fileIds: '',
-  });
-
-  return ctx.reply(
-    '📢 Режим создания поста.\n\n✏️ Чтобы обновить текст, просто отправьте его в новом сообщении. Обратите внимание: в сообщении не должно быть фото, видео и других файлов.\n\n🌅 Чтобы добавить фотографию, отправьте её отдельным сообщением. Если фотографий несколько, отправьте их по одной, иначе бот не сможет их сохранить.',
-    Markup.keyboard([['📋 Показать результат', '◀️ Назад']])
-  );
 });
 
 bot.hears('◀️ Назад', async ctx => {
   const telegramId = ctx.from.id;
   try {
     await postService.deleteByCreatorId(telegramId);
-    ctx.reply('Пост удален', Markup.removeKeyboard());
+    ctx.reply('Пост удален', adminButtons);
   } catch (error) {
     console.log(error);
     ctx.reply('Произошла ошибка при выходе из режима создания поста');
@@ -583,6 +543,72 @@ async function registerUserInIIko(ctx: Context, user: User) {
       'Возникла ошибка при регистрации в бонусную программу, обратитесь к администратору'
     );
   }
+}
+
+async function getCityStats(ctx: Context) {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+
+  const user = await userService.getByTelegramId(telegramId);
+  if (!user?.isAdmin) return;
+
+  const loaderMsg = await ctx.reply('Загрузка статистики...');
+
+  const stats = await userService.getCityStats();
+
+  ctx.deleteMessage(loaderMsg.message_id);
+
+  return ctx.reply(
+    `Всего пользователей в программе лояльности — ${stats.total}\nПользователей из Москвы — ${stats.msk}\nПользователей из Санкт-Петербурга — ${stats.spb}`
+  );
+}
+
+async function getXlsFile(ctx: Context) {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+  const user = await userService.getByTelegramId(telegramId);
+  if (!user || !user.isAdmin) return;
+  const loader = await ctx.reply('Генерируем файл...');
+  const result = await generateXls('interviews');
+  ctx.deleteMessage(loader.message_id);
+  if (result.status === 'error') {
+    ctx.reply(result.message);
+  }
+  try {
+    await ctx.replyWithDocument(
+      [process.env.PUBLIC_URL, 'interviews.zip'].join('/')
+    );
+  } catch (error) {
+    console.log('Ошибка отправки архива', error);
+    ctx.reply('Ошибка отправки файла');
+  }
+}
+
+async function createPost(ctx: Context) {
+  const telegramId = ctx.from?.id;
+
+  if (!telegramId) return;
+
+  const user = await userService.getByTelegramId(telegramId);
+  if (!user || !user.isAdmin) return;
+
+  const postsList = await postService.getAll({
+    creatorTelegramId: telegramId,
+  });
+
+  await Promise.all(
+    postsList.map(async post => await postService.delete(post.id))
+  );
+
+  await postService.create({
+    creatorTelegramId: telegramId,
+    fileIds: '',
+  });
+
+  return ctx.reply(
+    '📢 Режим создания поста.\n\n✏️ Чтобы обновить текст, просто отправьте его в новом сообщении. Обратите внимание: в сообщении не должно быть фото, видео и других файлов.\n\n🌅 Чтобы добавить фотографию, отправьте её отдельным сообщением. Если фотографий несколько, отправьте их по одной, иначе бот не сможет их сохранить.',
+    Markup.keyboard([['📋 Показать результат', '◀️ Назад']])
+  );
 }
 
 async function showBalance(ctx: Context) {
