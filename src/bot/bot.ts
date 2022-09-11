@@ -21,7 +21,7 @@ import { validateNumber } from '../helpers/validateNumber';
 import { generateXls } from '../scripts/createInterviewsXls';
 
 import dotenv from 'dotenv';
-import { adminButtons } from '../constants/buttons';
+import { adminButtons, clientButtons } from '../constants/buttons';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -72,12 +72,7 @@ bot.start(async ctx => {
     return ctx.reply('Пожалуйста, завершите регистрацию');
   }
 
-  return ctx.reply(
-    'Добро пожаловать в hot-not! ',
-    Markup.keyboard([[SHOW_BALANCE_TEXT, SPEND_TEXT]])
-      .oneTime()
-      .resize()
-  );
+  return ctx.reply('Добро пожаловать в hot-not! ', clientButtons);
 });
 
 bot.command('delete', async ctx => {
@@ -530,12 +525,7 @@ async function registerUserInIIko(ctx: Context, user: User) {
       balance: iikoBalance,
     });
     ctx.deleteMessage(loadingMessage.message_id);
-    return ctx.reply(
-      END_REGISTRATION_TEXT,
-      Markup.keyboard([[SHOW_BALANCE_TEXT, SPEND_TEXT]])
-        .oneTime()
-        .resize()
-    );
+    return ctx.reply(END_REGISTRATION_TEXT, clientButtons);
   } catch (error) {
     console.log(`Ошибка при регистрации пользователя: ${user.telegramId}`);
     ctx.deleteMessage(loadingMessage.message_id);
