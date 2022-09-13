@@ -36,7 +36,7 @@ export function validateDateOfBirth(dob: string): ValidationResult {
   if (date < 1) {
     return {
       status: 'error',
-      message: 'Число месяца начинается с 1',
+      message: 'Число месяца начинается с 1. Попробуйте еще раз',
     };
   }
 
@@ -45,8 +45,8 @@ export function validateDateOfBirth(dob: string): ValidationResult {
       status: 'error',
       message: `В это месяце ${daysInMonth} ${getDeclensionWordByCount(
         daysInMonth,
-        ['дней', 'день', 'дня']
-      )}`,
+        ['дней', 'день', 'дня'],
+      )}. Попробуйте еще раз`,
     };
   }
 
