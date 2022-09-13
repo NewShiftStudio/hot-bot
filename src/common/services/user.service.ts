@@ -2,7 +2,6 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/User';
 import { AppDataSource } from '../../database/appDataSourse';
 import { cardService } from './card.service';
-import { interviewService } from './interview.service';
 import { Interview } from '../entities/Interview';
 import { CityStats } from '../entities/CityStats';
 

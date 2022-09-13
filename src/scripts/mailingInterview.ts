@@ -16,7 +16,7 @@ async function mailingUsers() {
 
   for (const user of users) {
     const interview = user.interviews.find(
-      interview => interview.step === 'created'
+      (interview) => interview.step === 'created',
     );
     if (interview) {
       await setInterviewRequest(user.chatId, interview);

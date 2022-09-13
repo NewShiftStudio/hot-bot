@@ -2,7 +2,9 @@ import { Interview } from '../common/entities/Interview';
 import { interviewService } from '../common/services/interview.service';
 import { getUserCityString } from '../helpers/getUserCityString';
 
-const ExcelJS = require('exceljs');
+import * as ExcelJs from 'exceljs';
+
+// eslint-disable-next-line
 const AdmZip = require('adm-zip');
 
 const token = process.env.USER_BOT_TOKEN;
@@ -27,7 +29,7 @@ export async function generateXls(fileName: string): Promise<Result> {
     };
   }
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook = new ExcelJs.Workbook();
 
   const worksheet = workbook.addWorksheet('Результаты опроса');
   worksheet.columns = [
@@ -47,13 +49,13 @@ export async function generateXls(fileName: string): Promise<Result> {
 
   const rows = interviews.map(getInterviewRow);
 
-  rows.forEach(row => {
+  rows.forEach((row) => {
     worksheet.addRow(row);
   });
 
   try {
     await workbook.xlsx.writeFile(
-      process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx'
+      process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx',
     );
 
     const zip = new AdmZip();

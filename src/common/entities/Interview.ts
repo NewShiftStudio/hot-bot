@@ -1,4 +1,4 @@
-import { Entity, Column, JoinColumn, OneToOne, ManyToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 
@@ -19,7 +19,7 @@ export class Interview extends Base {
   @Column({ nullable: true })
   purity: number;
 
-  @ManyToOne(() => User, user => user.interviews, {
+  @ManyToOne(() => User, (user) => user.interviews, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

@@ -41,14 +41,14 @@ export class User extends Base {
   @Column({ default: false })
   isAdmin: boolean;
 
-  @OneToOne(() => Card, card => card.user, {
+  @OneToOne(() => Card, (card) => card.user, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn()
   card: Card;
 
-  @OneToMany(() => Interview, interview => interview.user, {
+  @OneToMany(() => Interview, (interview) => interview.user, {
     onDelete: 'SET NULL',
     nullable: true,
   })
