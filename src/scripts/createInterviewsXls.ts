@@ -2,8 +2,8 @@ import { Interview } from '../common/entities/Interview';
 import { interviewService } from '../common/services/interview.service';
 import { getUserCityString } from '../helpers/getUserCityString';
 
-// eslint-disable-next-line
-const ExcelJS = require('exceljs');
+import * as ExcelJs from 'exceljs';
+
 // eslint-disable-next-line
 const AdmZip = require('adm-zip');
 
@@ -29,7 +29,7 @@ export async function generateXls(fileName: string): Promise<Result> {
     };
   }
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook = new ExcelJs.Workbook();
 
   const worksheet = workbook.addWorksheet('Результаты опроса');
   worksheet.columns = [
