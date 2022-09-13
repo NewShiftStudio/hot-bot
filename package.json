@@ -30,6 +30,8 @@
   },
   "homepage": "https://github.com/NewShiftStudio/hot-bot#readme",
   "dependencies": {
+    "@sentry/node": "^7.12.1",
+    "@sentry/tracing": "^7.12.1",
     "@types/axios": "^0.14.0",
     "@types/bwip-js": "^3.0.0",
     "@types/date-fns": "^2.6.0",
