@@ -450,7 +450,7 @@ async function saveUserRegisterAnswer(
   const validationResult = await validateStep(step, answer);
 
   if (validationResult.status !== 'success') {
-    return validationResult.message;
+    return ctx.reply(validationResult.message);
   }
 
   if (!question) {
