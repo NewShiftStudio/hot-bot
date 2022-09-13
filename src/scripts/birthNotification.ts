@@ -24,32 +24,34 @@ async function congratulateUsers() {
   const today = new Date();
   const currentYear = today.getFullYear();
 
-  const congratulationsList: (Congratulation | null)[] = usersList.map(user => {
-    const dateArr = user.dateOfBirth.split('.');
-    const userDate = +dateArr[0];
-    const userMonth = +dateArr[1] - 1;
-    const userBirthDate = new Date(currentYear, userMonth, userDate);
+  const congratulationsList: (Congratulation | null)[] = usersList.map(
+    (user) => {
+      const dateArr = user.dateOfBirth.split('.');
+      const userDate = +dateArr[0];
+      const userMonth = +dateArr[1] - 1;
+      const userBirthDate = new Date(currentYear, userMonth, userDate);
 
-    const difference = differenceInDays(userBirthDate, today) + 1;
-    console.log(difference);
+      const difference = differenceInDays(userBirthDate, today) + 1;
+      console.log(difference);
 
-    switch (difference) {
-      case 7:
-        return {
-          user,
-          text: 'Ура, скоро день вашего рождения! Спешим сказать, что в честь вашего праздника мы дарим скидку 20% на весь чек и приятный welcome drink на всю вашу компанию!\n\nest. 1993 – место для настоящих ценителей гастрономических путешествий, авторских коктейлей и божественного интерьера! Ждем!\nБронь: https://est1993.ru/',
-        };
-      // case 14:
-      //   return {
-      //     user,
-      //     text: 'Ещё не выбрал, где отмечать др? А вот они мы, такие котики, приходи к нам',
-      //   };
-      default:
-        return null;
-    }
-  });
+      switch (difference) {
+        case 7:
+          return {
+            user,
+            text: 'Ура, скоро день вашего рождения! Спешим сказать, что в честь вашего праздника мы дарим скидку 20% на весь чек и приятный welcome drink на всю вашу компанию!\n\nest. 1993 – место для настоящих ценителей гастрономических путешествий, авторских коктейлей и божественного интерьера! Ждем!\nБронь: https://est1993.ru/',
+          };
+        // case 14:
+        //   return {
+        //     user,
+        //     text: 'Ещё не выбрал, где отмечать др? А вот они мы, такие котики, приходи к нам',
+        //   };
+        default:
+          return null;
+      }
+    },
+  );
 
-  congratulationsList.forEach(congratulation => {
+  congratulationsList.forEach((congratulation) => {
     if (!congratulation) return;
     const { user, text } = congratulation;
     try {
@@ -57,7 +59,7 @@ async function congratulateUsers() {
       console.log(`Пользователь с tgId ${user.telegramId} поздравлен`);
     } catch (error) {
       console.log(
-        `Возникла ошибка при поздравлении пользователя с tgId ${user.telegramId}`
+        `Возникла ошибка при поздравлении пользователя с tgId ${user.telegramId}`,
       );
       console.log(error);
     }

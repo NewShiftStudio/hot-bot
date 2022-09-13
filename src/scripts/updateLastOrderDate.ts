@@ -21,8 +21,9 @@ async function checkUserBalance(user: User) {
   const currentBalance = user.balance;
   try {
     const iikoBalance = await iikoApi.getUserBalance(user.iikoId);
+    if (!iikoBalance) return;
     if (currentBalance === iikoBalance) return;
-    await changeUserBalance(user, iikoBalance!);
+    await changeUserBalance(user, iikoBalance);
   } catch (error) {
     console.log(`Error on user ${user.telegramId}`, error);
     return;
@@ -31,12 +32,12 @@ async function checkUserBalance(user: User) {
 
 async function changeUserBalance(user: User, newBalance: number) {
   console.log(
-    `Update order date for ${user.firstName} ${user.secondName} - ${user.telegramId}`
+    `Update order date for ${user.firstName} ${user.secondName} - ${user.telegramId}`,
   );
 
   const userInterviews =
     user.interviews?.filter(
-      interview => !['closed', 'canceled'].includes(interview.step)
+      (interview) => !['closed', 'canceled'].includes(interview.step),
     ) || [];
 
   for (const interview of userInterviews) {

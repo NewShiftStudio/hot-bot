@@ -16,7 +16,7 @@ export class IikoApi {
         'https://api-ru.iiko.services/api/1/access_token',
         {
           apiLogin: this.apiLogin,
-        }
+        },
       );
       const authData = response.data as AuthToken;
       return authData.token;
@@ -39,7 +39,7 @@ export class IikoApi {
         },
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       const data = response.data as OrganizationsResponseDto;
       return data.organizations[0].id;
@@ -61,7 +61,7 @@ export class IikoApi {
         { ...user, organizationId },
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       const data = response.data as { id: string };
       return data.id;
@@ -83,7 +83,7 @@ export class IikoApi {
         { ...user, organizationId },
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       const data = response.data as { id: string };
       return data.id;
@@ -109,7 +109,7 @@ export class IikoApi {
         },
         {
           headers: { Authorization: `Bearer ${authToken}` },
-        }
+        },
       );
       const data = response.data as IikoUser;
 
