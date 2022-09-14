@@ -48,7 +48,7 @@ export async function bootstrap() {
 
 bootstrap();
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'local') {
   process.once('SIGINT', () => userBot.stop('SIGINT'));
   process.once('SIGTERM', () => userBot.stop('SIGTERM'));
 }
