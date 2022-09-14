@@ -573,9 +573,18 @@ async function getXlsFile(ctx: Context) {
     return ctx.reply(result.message);
   }
 
-  return await ctx.replyWithDocument(
-    [process.env.PUBLIC_URL, 'interviews.zip'].join('/'),
-  );
+  try {
+    return await ctx.replyWithDocument(
+      [
+        process.env.PUBLIC_URL,
+        process.env.PUBLIC_FOLDER,
+        'interviews.zip',
+      ].join('/'),
+    );
+  } catch (error) {
+    console.log('send xlsx error:', error);
+    return ctx.reply('Произошла ошибка');
+  }
 }
 
 async function createPost(ctx: Context) {
