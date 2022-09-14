@@ -8,6 +8,11 @@ import dotenv from 'dotenv';
 import { IikoUser } from '../@types/entities/IikoUser';
 dotenv.config();
 
+const iikoApiLogin = process.env.IIKO_API_LOGIN;
+
+if (!iikoApiLogin) {
+  throw new Error('IIKO_API_LOGIN is required');
+}
 export class IikoApi {
   constructor(private apiLogin: string) {}
   async getAuthToken() {
@@ -15,7 +20,7 @@ export class IikoApi {
       const response = await axios.post(
         'https://api-ru.iiko.services/api/1/access_token',
         {
-          apiLogin: 'ae6300eb-be2',
+          apiLogin: this.apiLogin,
         }
       );
       const authData = response.data as AuthToken;
@@ -125,4 +130,4 @@ export class IikoApi {
   }
 }
 
-export const iikoApi = new IikoApi(process.env.IIKO_API_LOGIN || '');
+export const iikoApi = new IikoApi(iikoApiLogin);
