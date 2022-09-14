@@ -567,7 +567,7 @@ async function getXlsFile(ctx: Context) {
   const user = await userService.getByTelegramId(telegramId);
   if (!user || !user.isAdmin) return;
   const loader = await ctx.reply('Генерируем файл...');
-  const result = await generateXls('interviews');
+  const result = await generateXls('interviewResults');
   ctx.deleteMessage(loader.message_id);
   if (result.status === 'error') {
     return ctx.reply(result.message);
@@ -578,7 +578,7 @@ async function getXlsFile(ctx: Context) {
       [
         process.env.PUBLIC_URL,
         process.env.PUBLIC_FOLDER,
-        'interviews.zip',
+        'interviewResults.zip',
       ].join('/'),
     );
   } catch (error) {
