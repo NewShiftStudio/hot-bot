@@ -586,14 +586,10 @@ async function getXlsFile(ctx: Context) {
   if (result.status === 'error') {
     return ctx.reply(result.message);
   }
-  try {
-    return await ctx.replyWithDocument(
-      [process.env.PUBLIC_URL, 'interviews.zip'].join('/'),
-    );
-  } catch (error) {
-    console.log('Ошибка отправки архива', error);
-    return ctx.reply('Ошибка отправки файла');
-  }
+
+  return await ctx.replyWithDocument(
+    [process.env.PUBLIC_URL, 'interviews.zip'].join('/'),
+  );
 }
 
 async function createPost(ctx: Context) {
