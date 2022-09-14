@@ -587,16 +587,21 @@ async function getXlsFile(ctx: Context) {
     return ctx.reply('Произошла ошибка');
   } finally {
     fs.promises.unlink(
-      [
-        path.resolve(
-          __dirname,
-          process.env.PUBLIC_FOLDER || '',
-          '/',
-          `${fileName}.xlsx`,
-        ),
-      ].join('/'),
+      path.resolve(
+        __dirname,
+        process.env.PUBLIC_FOLDER || '',
+        '/',
+        `${fileName}.xlsx`,
+      ),
     );
-    fs.promises.unlink(`./store/${fileName}.zip`);
+    fs.promises.unlink(
+      path.resolve(
+        __dirname,
+        process.env.PUBLIC_FOLDER || '',
+        '/',
+        `${fileName}.zip`,
+      ),
+    );
   }
 }
 
