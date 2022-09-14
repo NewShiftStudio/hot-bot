@@ -53,17 +53,14 @@ export async function generateXls(fileName: string): Promise<Result> {
     worksheet.addRow(row);
   });
 
-  try {
-    await workbook.xlsx.writeFile(
-      process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx',
-    );
+  await workbook.xlsx.writeFile(
+    process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx',
+  );
 
-    const zip = new AdmZip();
-    zip.addLocalFile(process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx');
-    zip.writeZip(process.env.PUBLIC_FOLDER + '/' + fileName + '.zip');
-  } catch (error) {
-    console.log(error);
-  }
+  const zip = new AdmZip();
+  zip.addLocalFile(process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx');
+  zip.writeZip(process.env.PUBLIC_FOLDER + '/' + fileName + '.zip');
+
   return {
     status: 'success',
     message: 'Успешно!',
