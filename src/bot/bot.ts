@@ -19,11 +19,9 @@ import { interviewQuestions } from '../constants/interviewQuestions';
 import { Interview } from '../common/entities/Interview';
 import { validateNumber } from '../helpers/validateNumber';
 import { generateXls } from '../scripts/createInterviewsXls';
-
-import dotenv from 'dotenv';
 import { adminButtons, clientButtons } from '../constants/buttons';
-import { mailingUsers } from '../scripts/mailingInterview';
-import { updateUsersBalance } from '../scripts/updateLastOrderDate';
+import { getXlsFileName } from '../helpers/getXlsFileName';
+import dotenv from 'dotenv';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -567,7 +565,8 @@ async function getXlsFile(ctx: Context) {
   const user = await userService.getByTelegramId(telegramId);
   if (!user || !user.isAdmin) return;
   const loader = await ctx.reply('Генерируем файл...');
-  const result = await generateXls('interviewResults');
+  const fileName = getXlsFileName();
+  const result = await generateXls(fileName);
   ctx.deleteMessage(loader.message_id);
   if (result.status === 'error') {
     return ctx.reply(result.message);
@@ -578,7 +577,7 @@ async function getXlsFile(ctx: Context) {
       [
         process.env.PUBLIC_URL,
         process.env.PUBLIC_FOLDER,
-        'interviewResults.zip',
+        `${fileName}.xlsx`,
       ].join('/'),
     );
   } catch (error) {
