@@ -3,23 +3,23 @@ import {
   ConsentStatus,
   CreateUserDto,
   SEX,
-} from '../../@types/dto/user/create.dto';
-import { ValidationResult } from '../../@types/entities/ValidationResult';
-import { iikoApi } from '../../api/iikoApi';
-import { Interview } from '../../common/entities/Interview';
-import { User } from '../../common/entities/User';
-import { interviewService } from '../../common/services/interview.service';
-import { postService } from '../../common/services/post.service';
-import { userService } from '../../common/services/user.service';
-import { clientButtons } from '../../constants/buttons';
-import { interviewQuestions } from '../../constants/interviewQuestions';
-import { registrationQuestions } from '../../constants/registrationQuestions';
-import { validateDateOfBirth } from '../../helpers/dobValidator';
-import { formatDateToIiko } from '../../helpers/formatDate';
-import { validatePhoneNumber } from '../../helpers/phoneValidation';
-import { validateNumber } from '../../helpers/validateNumber';
-import { getDeclensionWordByCount } from '../../helpers/wordHelper';
-import { generateXls } from '../../scripts/createInterviewsXls';
+} from '../@types/dto/user/create.dto';
+import { ValidationResult } from '../@types/entities/ValidationResult';
+import { iikoApi } from '../api/iikoApi';
+import { Interview } from '../common/entities/Interview';
+import { User } from '../common/entities/User';
+import { interviewService } from '../common/services/interview.service';
+import { postService } from '../common/services/post.service';
+import { userService } from '../common/services/user.service';
+import { clientButtons } from '../constants/buttons';
+import { interviewQuestions } from '../constants/interviewQuestions';
+import { registrationQuestions } from '../constants/registrationQuestions';
+import { validateDateOfBirth } from '../helpers/dobValidator';
+import { formatDateToIiko } from '../helpers/formatDate';
+import { validatePhoneNumber } from '../helpers/phoneValidation';
+import { validateNumber } from '../helpers/validateNumber';
+import { getDeclensionWordByCount } from '../helpers/wordHelper';
+import { generateXls } from '../scripts/createInterviewsXls';
 
 const userToken = process.env.USER_BOT_TOKEN;
 
@@ -377,6 +377,8 @@ class UserBotService {
       return ctx.deleteMessage(messageId);
     }
   }
+
+  async showAllUser(ctx: Context) {}
 }
 
 export const userBotService = new UserBotService(userToken);
