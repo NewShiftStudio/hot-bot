@@ -6,6 +6,7 @@ import type { NodeEnv } from './@types/entities/App';
 
 const envs = [
   'NODE_ENV',
+  'USER_BOT_TOKEN',
   'PUBLIC_FOLDER',
   'DB_HOST',
   'DB_PORT',

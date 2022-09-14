@@ -3,14 +3,11 @@ import { interviewService } from '../common/services/interview.service';
 import { getUserCityString } from '../helpers/getUserCityString';
 
 import * as ExcelJs from 'exceljs';
+import { getRequiredEnvsByNodeEnv } from '../helpers/gerRequiredEnvsByNodeEnv';
+import { NodeEnv } from '../@types/entities/App';
 
 // eslint-disable-next-line
 const AdmZip = require('adm-zip');
-
-const token = process.env.USER_BOT_TOKEN;
-if (!token) {
-  throw new Error('BOT_TOKEN must be provided!');
-}
 
 type Result = {
   status: 'success' | 'error';
