@@ -7,11 +7,6 @@ import * as ExcelJs from 'exceljs';
 // eslint-disable-next-line
 const AdmZip = require('adm-zip');
 
-const token = process.env.USER_BOT_TOKEN;
-if (!token) {
-  throw new Error('BOT_TOKEN must be provided!');
-}
-
 type Result = {
   status: 'success' | 'error';
   message: string;

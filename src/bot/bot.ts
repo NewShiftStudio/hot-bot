@@ -23,6 +23,7 @@ import { adminButtons, clientButtons } from '../constants/buttons';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
+import path from 'path';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -577,16 +578,30 @@ async function getXlsFile(ctx: Context) {
     return await ctx.replyWithDocument(
       [
         process.env.PUBLIC_URL,
-        process.env.PUBLIC_FOLDER,
-        `${fileName}.xlsx`,
+        process.env.PUBLIC_FOLDER || '',
+        `${fileName}.zip`,
       ].join('/'),
     );
   } catch (error) {
     console.log('send xlsx error:', error);
     return ctx.reply('Произошла ошибка');
   } finally {
-    // fs.promises.unlink(`./store/${fileName}.xlsx`);
-    // fs.promises.unlink(`./store/${fileName}.zip`);
+    fs.promises.unlink(
+      path.resolve(
+        __dirname,
+        process.env.PUBLIC_FOLDER || '',
+        '/',
+        `${fileName}.xlsx`,
+      ),
+    );
+    fs.promises.unlink(
+      path.resolve(
+        __dirname,
+        process.env.PUBLIC_FOLDER || '',
+        '/',
+        `${fileName}.zip`,
+      ),
+    );
   }
 }
 
