@@ -568,15 +568,15 @@ async function getXlsFile(ctx: Context) {
   const result = await generateXls('interviews');
   ctx.deleteMessage(loader.message_id);
   if (result.status === 'error') {
-    ctx.reply(result.message);
+    return ctx.reply(result.message);
   }
   try {
-    await ctx.replyWithDocument(
+    return await ctx.replyWithDocument(
       [process.env.PUBLIC_URL, 'interviews.zip'].join('/'),
     );
   } catch (error) {
     console.log('Ошибка отправки архива', error);
-    ctx.reply('Ошибка отправки файла');
+    return ctx.reply('Ошибка отправки файла');
   }
 }
 
