@@ -377,8 +377,6 @@ class UserBotService {
       return ctx.deleteMessage(messageId);
     }
   }
-
-  async showAllUser(ctx: Context) {}
 }
 
 export const userBotService = new UserBotService(userToken);
