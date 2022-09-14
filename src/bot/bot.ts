@@ -154,20 +154,6 @@ bot.hears('📋 Показать результат', async (ctx) => {
   );
 });
 
-bot.command('updateOrderDates', async (ctx) => {
-  const loadingMessage = await ctx.reply('Загрузка...');
-  await updateUsersBalance();
-  await ctx.deleteMessage(loadingMessage.message_id);
-  ctx.reply('Даты обновлены!');
-});
-
-bot.command('sentInterview', async (ctx) => {
-  const loadingMessage = await ctx.reply('Загрузка...');
-  await mailingUsers();
-  await ctx.deleteMessage(loadingMessage.message_id);
-  ctx.reply('Интервью разосланы!');
-});
-
 bot.on('text', async (ctx) => {
   const telegramId = ctx.message.from.id;
   const user = await userService.getByTelegramId(telegramId);
