@@ -20,6 +20,13 @@ export function validateNumber(number: number): ValidationResult {
       message: 'Мы понимаем как вам понравилось, но 10 хватит!',
     };
 
+  if (Number.isInteger(number)) {
+    return {
+      status: 'error',
+      message: 'Введите целое число',
+    };
+  }
+
   return {
     status: 'success',
     message: '',
