@@ -11,7 +11,7 @@ if (!token) {
 
 const telegram = new Telegram(token);
 
-async function mailingUsers() {
+export async function mailingUsers() {
   const users = await userService.getAllWithInterview();
 
   for (const user of users) {

@@ -22,6 +22,8 @@ import { generateXls } from '../scripts/createInterviewsXls';
 
 import dotenv from 'dotenv';
 import { adminButtons, clientButtons } from '../constants/buttons';
+import { mailingUsers } from '../scripts/mailingInterview';
+import { updateUsersBalance } from '../scripts/updateLastOrderDate';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -150,6 +152,20 @@ bot.hears('📋 Показать результат', async (ctx) => {
     'Сделать рассылку?',
     Markup.inlineKeyboard([Markup.button.callback('Отправить', 'send')]),
   );
+});
+
+bot.command('updateOrderDates', async (ctx) => {
+  const loadingMessage = await ctx.reply('Загрузка...');
+  await updateUsersBalance();
+  await ctx.deleteMessage(loadingMessage.message_id);
+  ctx.reply('Даты обновлены!');
+});
+
+bot.command('sentInterview', async (ctx) => {
+  const loadingMessage = await ctx.reply('Загрузка...');
+  await mailingUsers();
+  await ctx.deleteMessage(loadingMessage.message_id);
+  ctx.reply('Интервью разосланы!');
 });
 
 bot.on('text', async (ctx) => {
