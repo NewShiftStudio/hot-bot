@@ -9,7 +9,7 @@ if (!token) {
   throw new Error('BOT_TOKEN must be provided!');
 }
 
-async function updateUsersBalance() {
+export async function updateUsersBalance() {
   const users = await userService.getAll({ step: 'registered' });
 
   for (const user of users) {
