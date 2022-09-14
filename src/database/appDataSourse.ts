@@ -14,5 +14,6 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: [Card, User, Post, Interview],
+  // FIXME: убрать true!!
   synchronize: true,
 });
