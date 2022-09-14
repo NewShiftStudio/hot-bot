@@ -14,6 +14,7 @@ Sentry.init({
     new Tracing.Integrations.Express({ app }),
   ],
   tracesSampleRate: 1.0,
+  environment: process.env.NODE_ENV,
 });
 
 app.use(Sentry.Handlers.requestHandler());
