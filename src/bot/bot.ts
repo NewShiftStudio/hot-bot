@@ -20,8 +20,9 @@ import { Interview } from '../common/entities/Interview';
 import { validateNumber } from '../helpers/validateNumber';
 import { generateXls } from '../scripts/createInterviewsXls';
 import { adminButtons, clientButtons } from '../constants/buttons';
-import { getXlsFileName } from '../helpers/getXlsFileName';
 import dotenv from 'dotenv';
+import { randomUUID } from 'crypto';
+import * as fs from 'fs';
 dotenv.config();
 
 const userToken = process.env.USER_BOT_TOKEN;
@@ -565,7 +566,7 @@ async function getXlsFile(ctx: Context) {
   const user = await userService.getByTelegramId(telegramId);
   if (!user || !user.isAdmin) return;
   const loader = await ctx.reply('Генерируем файл...');
-  const fileName = getXlsFileName();
+  const fileName = randomUUID();
   const result = await generateXls(fileName);
   ctx.deleteMessage(loader.message_id);
   if (result.status === 'error') {
@@ -583,6 +584,9 @@ async function getXlsFile(ctx: Context) {
   } catch (error) {
     console.log('send xlsx error:', error);
     return ctx.reply('Произошла ошибка');
+  } finally {
+    // fs.promises.unlink(`./store/${fileName}.xlsx`);
+    // fs.promises.unlink(`./store/${fileName}.zip`);
   }
 }
 
