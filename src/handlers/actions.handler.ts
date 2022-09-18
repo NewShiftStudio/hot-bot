@@ -6,10 +6,8 @@ import { postService } from '../common/services/post.service';
 import { userService } from '../common/services/user.service';
 import { interviewQuestions } from '../constants/interviewQuestions';
 import { registrationQuestions } from '../constants/registrationQuestions';
+import { HELLO_MESSAGE_TEXT } from '../constants/text';
 import { getDeclensionWordByCount } from '../helpers/wordHelper';
-
-const HELLO_MESSAGE_TEXT =
-  'Добро пожаловать в бот Est. 1993.\n\nЭто бот программы лояльности. С его помощью вы сможете копить баллы и тратить их на наши легендарные хот-доги.\n\nЧтобы стать участником программы, пожалуйста, зарегистрируйтесь. Это займёт не больше двух минут — просто ответьте на несколько вопросов.';
 
 export async function handleStartRegistration(ctx: Context<Update>) {
   ctx.answerCbQuery();

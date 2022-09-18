@@ -13,7 +13,11 @@ import { User } from '../common/entities/User';
 import { interviewService } from '../common/services/interview.service';
 import { postService } from '../common/services/post.service';
 import { userService } from '../common/services/user.service';
-import { adminButtons, clientButtons } from '../constants/keyboards';
+import {
+  adminKeyboard,
+  clientKeyboard,
+  createPostKeyboard,
+} from '../constants/keyboards';
 import { interviewQuestions } from '../constants/interviewQuestions';
 import { registrationQuestions } from '../constants/registrationQuestions';
 import { validateDateOfBirth } from '../helpers/dobValidator';
@@ -24,11 +28,13 @@ import { getDeclensionWordByCount } from '../helpers/wordHelper';
 import { generateXls } from '../scripts/createInterviewsXls';
 import * as fs from 'fs';
 import path from 'path';
-
-const HELLO_MESSAGE_TEXT =
-  'Добро пожаловать в бот Est. 1993.\n\nЭто бот программы лояльности. С его помощью вы сможете копить баллы и тратить их на наши легендарные хот-доги.\n\nЧтобы стать участником программы, пожалуйста, зарегистрируйтесь. Это займёт не больше двух минут — просто ответьте на несколько вопросов.';
-const END_REGISTRATION_TEXT =
-  'Спасибо, что присоединились к сообществу настоящих гедонистов! Дарим вам 200 приветственных бонусов. Оплачивайте ими 50% от вашего чека! 🔥\n\nКстати, забыли сказать, при бронировании столика по промокоду «eat in est»  вы получаете сет из наших невероятных тапасов! Забронировать можно по номерам телефонов тут 👇🏼\n\nEst1993.ru';
+import {
+  BAR_CODE_CAPTION,
+  CREATE_POST_REGIME_TEXT,
+  END_REGISTRATION_TEXT,
+  HELLO_MESSAGE_TEXT,
+  REGISTER_ADMIN_TEXT,
+} from '../constants/text';
 
 export async function handleStartMessage(ctx: Context) {
   const telegramId = ctx.message?.from.id;
@@ -49,7 +55,11 @@ export async function handleStartMessage(ctx: Context) {
     return ctx.reply('Пожалуйста, завершите регистрацию');
   }
 
-  return ctx.reply('Добро пожаловать в hot-not! ', clientButtons);
+  if (user.isAdmin) {
+    return ctx.reply('Добро пожаловать в hot-not!', adminKeyboard);
+  }
+
+  return ctx.reply('Добро пожаловать в hot-not!', clientKeyboard);
 }
 
 export async function showBalance(ctx: Context) {
@@ -102,7 +112,7 @@ export async function sendBarCode(ctx: Context) {
     await ctx.replyWithPhoto(
       [process.env.PUBLIC_URL, user.card.barCodeLink].join('/'),
       {
-        caption: `Отлично! Чтобы списать баллы, покажите этот бар-код вашему официанту.`,
+        caption: BAR_CODE_CAPTION,
       },
     );
   } catch (error) {
@@ -116,7 +126,7 @@ export async function sendBarCode(ctx: Context) {
   }
 }
 
-export async function createPost(ctx: Context) {
+export async function handleCreatePost(ctx: Context) {
   const telegramId = ctx.from?.id;
 
   if (!telegramId) return;
@@ -137,10 +147,7 @@ export async function createPost(ctx: Context) {
     fileIds: '',
   });
 
-  return ctx.reply(
-    '📢 Режим создания поста.\n\n✏️ Чтобы обновить текст, просто отправьте его в новом сообщении. Обратите внимание: в сообщении не должно быть фото, видео и других файлов.\n\n🌅 Чтобы добавить фотографию, отправьте её отдельным сообщением. Если фотографий несколько, отправьте их по одной, иначе бот не сможет их сохранить.',
-    Markup.keyboard([['📋 Показать результат', '◀️ Назад']]),
-  );
+  return ctx.reply(CREATE_POST_REGIME_TEXT, createPostKeyboard);
 }
 
 export async function handleTextMessage(ctx: Context) {
@@ -220,10 +227,7 @@ export async function handleRegisterAdmin(ctx: Context) {
     await userService.update(telegramId, {
       isAdmin: true,
     });
-    return ctx.reply(
-      'Отлично! Теперь вы можете:\nСоздавать рассылки используя команду /createPost\nПолучать статистику по городам /cityStats',
-      adminButtons,
-    );
+    return ctx.reply(REGISTER_ADMIN_TEXT, adminKeyboard);
   } catch (error) {
     console.log(error);
     return ctx.reply('Произошла ошибка при назначении роли');
@@ -235,7 +239,7 @@ export async function handleBack(ctx: Context) {
   if (!telegramId) return;
   try {
     await postService.deleteByCreatorId(telegramId);
-    ctx.reply('Пост удален', adminButtons);
+    ctx.reply('Пост удален', adminKeyboard);
   } catch (error) {
     console.log(error);
     ctx.reply('Произошла ошибка при выходе из режима создания поста');
@@ -498,7 +502,7 @@ async function registerUserInIIko(ctx: Context, user: User) {
       balance: iikoBalance,
     });
     ctx.deleteMessage(loadingMessage.message_id);
-    return ctx.reply(END_REGISTRATION_TEXT, clientButtons);
+    return ctx.reply(END_REGISTRATION_TEXT, clientKeyboard);
   } catch (error) {
     console.log(`Ошибка при регистрации пользователя: ${user.telegramId}`);
     ctx.deleteMessage(loadingMessage.message_id);
