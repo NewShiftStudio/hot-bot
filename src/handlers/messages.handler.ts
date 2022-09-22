@@ -62,7 +62,7 @@ export async function handleStartMessage(ctx: Context) {
   return ctx.reply('Добро пожаловать в hot-not!', clientKeyboard);
 }
 
-export async function showBalance(ctx: Context) {
+export async function handleShowBalance(ctx: Context) {
   const telegramId = ctx.from?.id;
   if (!telegramId) return;
 
@@ -91,7 +91,7 @@ export async function showBalance(ctx: Context) {
   );
 }
 
-export async function sendBarCode(ctx: Context) {
+export async function handleSendBarCode(ctx: Context) {
   const telegramId = ctx.from?.id;
 
   if (!telegramId) return;
