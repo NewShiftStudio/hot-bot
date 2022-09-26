@@ -50,7 +50,7 @@ export function generateBarCode(card: CardData) {
       encoding: 'base64',
     });
 
-    const fileLink = path.join(STATIC_SERVER_URL, BAR_CODES_FOLDER, fileName);
+    const fileLink = STATIC_SERVER_URL + path.join(BAR_CODES_FOLDER, fileName);
 
     cardService.create({
       cardNumber: card.cardNumber,

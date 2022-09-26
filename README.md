@@ -34,7 +34,6 @@
 `USER_BOT_TOKEN`
 `IIKO_API_LOGIN`
 `REGISTER_ADMIN_PASSWORD`
-`PUBLIC_FOLDER`='store'
 `BAR_CODES_FOLDER`='bar-codes
 
 Запуск сервера
@@ -48,7 +47,7 @@
 Настройка базы данных
 
 ```
-В DB_PATH указать путь к store.db
+
 ```
 
 Настройка сервера
