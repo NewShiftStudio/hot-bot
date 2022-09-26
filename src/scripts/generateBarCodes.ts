@@ -31,31 +31,30 @@ export function generateBarCode(card: CardData) {
   const BAR_CODES_FOLDER = process.env.BAR_CODES_FOLDER || '';
   const STATIC_SERVER_URL = process.env.STATIC_SERVER_URL || '';
 
-  const fullPath = path.join(process.cwd(), 'static', BAR_CODES_FOLDER);
-
   const fileName = `${card.cardNumber}.png`;
+  const folderPath = path.join(process.cwd(), 'static', BAR_CODES_FOLDER);
+  const filePath = path.join(folderPath, fileName);
+  const fileRelativePath = path.join(BAR_CODES_FOLDER, fileName);
 
   toBuffer({ text: card.cardNumber, ...barCodeOptions }, async (error, img) => {
     if (error) {
       console.error(error);
     }
 
-    const exists = await fs.promises.access(fullPath).then(...toBool);
+    const exists = await fs.promises.access(folderPath).then(...toBool);
 
     if (!exists) {
-      await fs.promises.mkdir(fullPath, { recursive: true });
+      await fs.promises.mkdir(folderPath, { recursive: true });
     }
 
-    await fs.promises.writeFile(path.join(fullPath, fileName), img, {
+    await fs.promises.writeFile(filePath, img, {
       encoding: 'base64',
     });
-
-    const fileLink = STATIC_SERVER_URL + path.join(BAR_CODES_FOLDER, fileName);
 
     cardService.create({
       cardNumber: card.cardNumber,
       cardTrack: card.cardTrack,
-      barCodeLink: fileLink,
+      barCodeLink: STATIC_SERVER_URL + '/' + fileRelativePath,
     });
   });
 }
