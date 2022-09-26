@@ -1,6 +1,7 @@
 import { Interview } from '../common/entities/Interview';
 import { interviewService } from '../common/services/interview.service';
 import { getUserCityString } from '../helpers/getUserCityString';
+import path from 'node:path';
 
 import * as ExcelJs from 'exceljs';
 
@@ -49,15 +50,20 @@ export async function generateXls(fileName: string): Promise<Result> {
   });
 
   try {
-    await workbook.xlsx.writeFile(
-      process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx',
+    const xlsxPath = path.join(
+      process.cwd(),
+      'static',
+      'xlsx',
+      `${fileName}.xlsx`,
     );
 
+    await workbook.xlsx.writeFile(xlsxPath);
+
     const zip = new AdmZip();
-    await zip.addLocalFile(
-      process.env.PUBLIC_FOLDER + '/' + fileName + '.xlsx',
+    await zip.addLocalFile(xlsxPath);
+    await zip.writeZip(
+      path.join(process.cwd(), 'static', 'zip', `${fileName}.zip`),
     );
-    await zip.writeZip(process.env.PUBLIC_FOLDER + '/' + fileName + '.zip');
 
     return {
       status: 'success',

@@ -17,7 +17,6 @@
 `USER_SERVER_PORT` - порт сервера
 `USER_SERVER_URL` - адрес сервера
 
-`PUBLIC_FOLDER` - путь к папке с публичными файлами
 `BAR_CODES_FOLDER` - название папки с бар-кодами (Прим. /bar-codes)
 
 ## Установка зависимостей
