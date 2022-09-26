@@ -2,8 +2,10 @@ import { Interview } from '../common/entities/Interview';
 import { interviewService } from '../common/services/interview.service';
 import { getUserCityString } from '../helpers/getUserCityString';
 import path from 'node:path';
+import fs from 'node:fs';
 
 import * as ExcelJs from 'exceljs';
+import { toBool } from '../helpers/toBool';
 
 // eslint-disable-next-line
 const AdmZip = require('adm-zip');
@@ -50,20 +52,30 @@ export async function generateXls(fileName: string): Promise<Result> {
   });
 
   try {
-    const xlsxPath = path.join(
-      process.cwd(),
-      'static',
-      'xlsx',
-      `${fileName}.xlsx`,
-    );
+    const folderPathXlsx = path.join(process.cwd(), 'static', 'xlsx');
+    const folderPathZip = path.join(process.cwd(), 'static', 'zip');
 
-    await workbook.xlsx.writeFile(xlsxPath);
+    const fileNameXlsx = `${fileName}.xlsx`;
+    const fileNameZip = `${fileName}.zip`;
+
+    const filePathXlsx = path.join(folderPathXlsx, fileNameXlsx);
+    const filePathZip = path.join(folderPathXlsx, fileNameZip);
+
+    const existsXlsx = await fs.promises.access(folderPathXlsx).then(...toBool);
+    const existsZip = await fs.promises.access(folderPathZip).then(...toBool);
+
+    if (!existsXlsx) {
+      await fs.promises.mkdir(folderPathXlsx, { recursive: true });
+    }
+    if (!existsZip) {
+      await fs.promises.mkdir(folderPathZip, { recursive: true });
+    }
+
+    await workbook.xlsx.writeFile(filePathXlsx);
 
     const zip = new AdmZip();
-    await zip.addLocalFile(xlsxPath);
-    await zip.writeZip(
-      path.join(process.cwd(), 'static', 'zip', `${fileName}.zip`),
-    );
+    await zip.addLocalFile(filePathXlsx);
+    await zip.writeZip(path.join(filePathZip));
 
     return {
       status: 'success',

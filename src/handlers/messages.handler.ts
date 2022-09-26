@@ -309,7 +309,9 @@ export async function handleGetXlsFile(ctx: Context) {
   }
 
   try {
-    const FILE_PATH = path.join(STATIC_SERVER_URL, 'zip', `${fileName}.zip`);
+    const FILE_PATH =
+      STATIC_SERVER_URL + '/' + path.join('zip', `${fileName}.zip`);
+    console.log('FILE_PATH: ', FILE_PATH);
     return await ctx.replyWithDocument(FILE_PATH);
   } catch (error) {
     console.info('send xlsx error:', error);
