@@ -109,12 +109,9 @@ export async function handleSendBarCode(ctx: Context) {
   });
 
   try {
-    await ctx.replyWithPhoto(
-      [process.env.PUBLIC_URL, user.card.barCodeLink].join('/'),
-      {
-        caption: BAR_CODE_CAPTION,
-      },
-    );
+    await ctx.replyWithPhoto(user.card.barCodeLink, {
+      caption: BAR_CODE_CAPTION,
+    });
   } catch (error) {
     console.log(error);
     ctx.deleteMessage(messageId);

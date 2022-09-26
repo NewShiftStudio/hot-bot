@@ -3,7 +3,7 @@ import { ReadStream } from 'node:fs';
 import * as http from 'node:http';
 import * as path from 'node:path';
 
-const PORT = 8000;
+const PORT = process.env.STATIC_SERVER_PORT;
 
 type FileTypes =
   | 'html'
