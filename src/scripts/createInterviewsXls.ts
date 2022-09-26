@@ -55,6 +55,9 @@ export async function generateXls(fileName: string): Promise<Result> {
     const folderPathXlsx = path.join(process.cwd(), 'static', 'xlsx');
     const folderPathZip = path.join(process.cwd(), 'static', 'zip');
 
+    console.info('folderPathXlsx: ', folderPathXlsx);
+    console.info('folderPathZip: ', folderPathZip);
+
     const fileNameXlsx = `${fileName}.xlsx`;
     const fileNameZip = `${fileName}.zip`;
 
@@ -75,7 +78,7 @@ export async function generateXls(fileName: string): Promise<Result> {
 
     const zip = new AdmZip();
     await zip.addLocalFile(filePathXlsx);
-    await zip.writeZip(path.join(filePathZip));
+    await zip.writeZip(filePathZip);
 
     return {
       status: 'success',
