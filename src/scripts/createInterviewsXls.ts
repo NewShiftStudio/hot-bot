@@ -62,7 +62,7 @@ export async function generateXls(fileName: string): Promise<Result> {
     const fileNameZip = `${fileName}.zip`;
 
     const filePathXlsx = path.join(folderPathXlsx, fileNameXlsx);
-    const filePathZip = path.join(folderPathXlsx, fileNameZip);
+    const filePathZip = path.join(folderPathZip, fileNameZip);
 
     const existsXlsx = await fs.promises.access(folderPathXlsx).then(...toBool);
     const existsZip = await fs.promises.access(folderPathZip).then(...toBool);
