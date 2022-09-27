@@ -109,12 +109,9 @@ export async function handleSendBarCode(ctx: Context) {
   });
 
   try {
-    await ctx.replyWithPhoto(
-      [process.env.PUBLIC_URL, user.card.barCodeLink].join('/'),
-      {
-        caption: BAR_CODE_CAPTION,
-      },
-    );
+    await ctx.replyWithPhoto(user.card.barCodeLink, {
+      caption: BAR_CODE_CAPTION,
+    });
   } catch (error) {
     console.log(error);
     ctx.deleteMessage(messageId);
@@ -298,6 +295,7 @@ export async function handleGetUserStats(ctx: Context) {
 }
 
 export async function handleGetXlsFile(ctx: Context) {
+  const STATIC_SERVER_URL = process.env.STATIC_SERVER_URL || '';
   const telegramId = ctx.from?.id;
   if (!telegramId) return;
   const user = await userService.getByTelegramId(telegramId);
@@ -311,33 +309,15 @@ export async function handleGetXlsFile(ctx: Context) {
   }
 
   try {
-    return await ctx.replyWithDocument(
-      [
-        process.env.PUBLIC_URL,
-        process.env.PUBLIC_FOLDER || '',
-        `${fileName}.zip`,
-      ].join('/'),
-    );
+    const FILE_PATH =
+      STATIC_SERVER_URL + '/' + path.join('zip', `${fileName}.zip`);
+    return await ctx.replyWithDocument(FILE_PATH);
   } catch (error) {
-    console.log('send xlsx error:', error);
+    console.info('send xlsx error:', error);
     return ctx.reply('Произошла ошибка');
   } finally {
-    fs.promises.unlink(
-      path.resolve(
-        __dirname,
-        process.env.PUBLIC_FOLDER || '',
-        '/',
-        `${fileName}.xlsx`,
-      ),
-    );
-    fs.promises.unlink(
-      path.resolve(
-        __dirname,
-        process.env.PUBLIC_FOLDER || '',
-        '/',
-        `${fileName}.zip`,
-      ),
-    );
+    fs.promises.unlink(path.resolve(__dirname, 'xlsx', `${fileName}.xlsx`));
+    fs.promises.unlink(path.resolve(__dirname, 'zip', `${fileName}.zip`));
   }
 }
 

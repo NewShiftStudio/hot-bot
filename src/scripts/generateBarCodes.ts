@@ -1,8 +1,10 @@
 import { toBuffer, ToBufferOptions } from 'bwip-js';
 import * as fs from 'fs';
+import path from 'node:path';
 import list from '../../cards.json';
 import { cardService } from '../common/services/card.service';
 import { AppDataSource } from '../database/appDataSourse';
+import { toBool } from '../helpers/toBool';
 import { wait } from '../helpers/wait';
 
 const cardsList = list as CardData[];
@@ -24,26 +26,35 @@ const barCodeOptions: Omit<ToBufferOptions, 'text'> = {
 };
 
 export function generateBarCode(card: CardData) {
-  console.log(card.cardNumber);
-  const fullPath = [
-    process.env.PUBLIC_FOLDER,
-    process.env.BAR_CODES_FOLDER,
-    `${card.cardNumber}.png`,
-  ].join('/');
+  console.info(card.cardNumber);
+
+  const BAR_CODES_FOLDER = process.env.BAR_CODES_FOLDER || '';
+  const STATIC_SERVER_URL = process.env.STATIC_SERVER_URL || '';
+
+  const fileName = `${card.cardNumber}.png`;
+  const folderPath = path.join(process.cwd(), 'static', BAR_CODES_FOLDER);
+  const filePath = path.join(folderPath, fileName);
+  const fileRelativePath = path.join(BAR_CODES_FOLDER, fileName);
 
   toBuffer({ text: card.cardNumber, ...barCodeOptions }, async (error, img) => {
     if (error) {
-      console.log(error);
+      console.error(error);
     }
 
-    await fs.promises.writeFile(fullPath, img, {
+    const exists = await fs.promises.access(folderPath).then(...toBool);
+
+    if (!exists) {
+      await fs.promises.mkdir(folderPath, { recursive: true });
+    }
+
+    await fs.promises.writeFile(filePath, img, {
       encoding: 'base64',
     });
 
     cardService.create({
       cardNumber: card.cardNumber,
       cardTrack: card.cardTrack,
-      barCodeLink: fullPath,
+      barCodeLink: STATIC_SERVER_URL + '/' + fileRelativePath,
     });
   });
 }
