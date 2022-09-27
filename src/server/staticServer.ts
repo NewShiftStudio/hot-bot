@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import { ReadStream } from 'node:fs';
 import * as http from 'node:http';
 import * as path from 'node:path';
+import { toBool } from '../helpers/toBool';
 
 const PORT = process.env.STATIC_SERVER_PORT;
 
@@ -37,8 +38,6 @@ const MIME_TYPES: Record<FileTypes | 'default', string> = {
 
 const STATIC_PATH = path.join(process.cwd(), './static');
 const SERVER_TIMEOUT = 10000; // 10s
-
-const toBool = [() => true, () => false];
 
 const prepareFile = async (url: string): Promise<CustomFile> => {
   const paths = [STATIC_PATH, url];
