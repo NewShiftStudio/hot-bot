@@ -12,8 +12,9 @@ class CardService {
     this.cardRepository = AppDataSource.getRepository(Card);
   }
 
-  async getAll(card?: Partial<Card>) {
+  async getAll(card?: Partial<Card>card?: Partial<Card>) {
     return await this.cardRepository.find({
+      where: card,
       where: card,
       relations: ['user'],
     });
