@@ -1,4 +1,5 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Interview } from './Interview';
 import { Base } from './Base';
 import { Card } from './Card';
 
@@ -19,6 +20,9 @@ export class User extends Base {
   @Column({ nullable: true })
   secondName: string;
 
+  @Column({ nullable: true })
+  city: string;
+
   @Column({ unique: true, nullable: true })
   phoneNumber: string;
 
@@ -35,12 +39,19 @@ export class User extends Base {
   lastOrderDate: Date;
 
   @Column({ default: false })
-  canCratePosts: boolean;
+  isAdmin: boolean;
 
-  @OneToOne(() => Card, card => card.user, {
+  @OneToOne(() => Card, (card) => card.user, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn()
   card: Card;
+
+  @OneToMany(() => Interview, (interview) => interview.user, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn()
+  interviews: Interview[];
 }

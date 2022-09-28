@@ -1,6 +1,6 @@
 import { ValidationResult } from './../@types/entities/ValidationResult';
 
-let PHONE_REGEX = /^((\+7)|8)\d{10}$/;
+const PHONE_REGEX = /^((\+7)|8)\d{10}$/;
 
 export function validatePhoneNumber(phoneNumber: string): ValidationResult {
   if (!PHONE_REGEX.test(phoneNumber)) {

@@ -32,7 +32,7 @@ async function notifyUsers() {
     if (!user.lastOrderDate) return acc;
     const daysFromLastOrder = differenceInCalendarDays(
       today,
-      user.lastOrderDate
+      user.lastOrderDate,
     );
     if (daysFromLastOrder <= 0) return acc;
     switch (daysFromLastOrder) {
@@ -53,15 +53,15 @@ async function notifyUsers() {
     }
   }, []);
 
-  usersToNotify.forEach(notification => {
+  usersToNotify.forEach((notification) => {
     try {
       notifyUser(notification.user.chatId, notification.text);
       console.log(
-        `Пользователь с tgId ${notification.user.telegramId} оповещен`
+        `Пользователь с tgId ${notification.user.telegramId} оповещен`,
       );
     } catch (error) {
       console.log(
-        `Возникла ошибка при поздравлении пользователя с tgId ${notification.user.telegramId}}`
+        `Возникла ошибка при поздравлении пользователя с tgId ${notification.user.telegramId}}`,
       );
       console.log(error);
     }

@@ -2,18 +2,18 @@ import { DataSource } from 'typeorm';
 import { User } from '../common/entities/User';
 import { Card } from '../common/entities/Card';
 import { Post } from '../common/entities/Post';
+import { Interview } from '../common/entities/Interview';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const dbPath = process.env.DB_PATH;
-
-if (!dbPath) {
-  throw new Error('Empty db path');
-}
-
 export const AppDataSource = new DataSource({
-  type: 'sqlite',
-  database: dbPath,
-  entities: [Card, User, Post],
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: +(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  entities: [Card, User, Post, Interview],
+  // FIXME: убрать true!!
   synchronize: true,
 });

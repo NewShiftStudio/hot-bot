@@ -3,3 +3,5 @@ dist
 store
 .env
 test.sqlite
+cards.json
+static/*/**

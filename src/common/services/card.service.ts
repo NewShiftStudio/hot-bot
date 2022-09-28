@@ -12,8 +12,9 @@ class CardService {
     this.cardRepository = AppDataSource.getRepository(Card);
   }
 
-  async getAll() {
+  async getAll(card?: Partial<Card>) {
     return await this.cardRepository.find({
+      where: card,
       relations: ['user'],
     });
   }
@@ -27,8 +28,11 @@ class CardService {
 
   async getFreeCard() {
     const cardsList = await this.getAll();
-    const freeCards = cardsList.filter(card => !card.user);
-    console.log(freeCards[0]);
+    const freeCards = cardsList.filter((card) => !card.user);
+    if (freeCards.length === 0) {
+      console.log(`Свободные карты кончились`);
+      throw new Error('Нет свободных карт');
+    }
     return freeCards[0];
   }
 
