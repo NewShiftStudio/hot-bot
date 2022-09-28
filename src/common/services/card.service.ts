@@ -15,7 +15,6 @@ class CardService {
   async getAll(card?: Partial<Card>card?: Partial<Card>) {
     return await this.cardRepository.find({
       where: card,
-      where: card,
       relations: ['user'],
     });
   }
@@ -30,7 +29,7 @@ class CardService {
   async getFreeCard() {
     const freeCard = await this.cardRepository.findOne({
       where: {
-        user: IsNull(),
+        userId: IsNull(),
       },
     });
     if (!freeCard) {
