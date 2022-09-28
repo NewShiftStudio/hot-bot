@@ -13,6 +13,9 @@ export class Card extends Base {
   @Column({ nullable: true })
   barCodeLink: string;
 
+  @Column({ nullable: true })
+  userId: number;
+
   @OneToOne(() => User, (user) => user.card, {
     onDelete: 'SET NULL',
     nullable: true,
