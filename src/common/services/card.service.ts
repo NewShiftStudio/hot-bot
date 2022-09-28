@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Card } from '../entities/Card';
 import { AppDataSource } from '../../database/appDataSourse';
 
@@ -27,13 +27,16 @@ class CardService {
   }
 
   async getFreeCard() {
-    const cardsList = await this.getAll();
-    const freeCards = cardsList.filter((card) => !card.user);
-    if (freeCards.length === 0) {
+    const freeCard = await this.cardRepository.findOne({
+      where: {
+        user: IsNull(),
+      },
+    });
+    if (!freeCard) {
       console.log(`Свободные карты кончились`);
       throw new Error('Нет свободных карт');
     }
-    return freeCards[0];
+    return freeCard;
   }
 
   async create(card: Partial<Card>) {
