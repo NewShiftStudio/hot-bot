@@ -3,11 +3,14 @@ import { bot as userBot } from './bot/bot';
 import { app } from './server/server';
 import { getRequiredEnvsByNodeEnv } from './helpers/gerRequiredEnvsByNodeEnv';
 import type { NodeEnv } from './@types/entities/App';
+import { launchStaticServer } from './server/staticServer';
 
 const envs = [
   'NODE_ENV',
   'USER_BOT_TOKEN',
-  'PUBLIC_FOLDER',
+  'BAR_CODES_FOLDER',
+  'STATIC_SERVER_PORT',
+  'STATIC_SERVER_URL',
   'DB_HOST',
   'DB_PORT',
   'DB_USERNAME',
@@ -32,7 +35,10 @@ export async function bootstrap() {
   try {
     await AppDataSource.initialize();
     console.log('Data Source has been initialized!');
-
+    await launchStaticServer();
+    console.log(
+      `Static server launched at PORT: ${process.env.STATIC_SERVER_PORT}`,
+    );
     if (process.env.NODE_ENV === 'local') {
       await userBot.launch();
       console.log('Bot successfully launched!');

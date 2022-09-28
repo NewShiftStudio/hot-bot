@@ -29,7 +29,7 @@ class CardService {
   async getFreeCard() {
     const freeCard = await this.cardRepository.findOne({
       where: {
-        user: IsNull(),
+        userId: IsNull(),
       },
     });
     if (!freeCard) {
